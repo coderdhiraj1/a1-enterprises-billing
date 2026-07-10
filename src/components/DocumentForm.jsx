@@ -21,8 +21,8 @@ const COMMON_FABRICATION_ITEMS = [
 
 const UNITS = ['Nos', 'Sq.Ft', 'Rft', 'Kg', 'Lumpsum', 'Set'];
 
-export default function DocumentForm({ onSave, initialData = null, nextNumber = 1 }) {
-  const [docType, setDocType] = useState('bill');
+export default function DocumentForm({ onSave, initialData = null, nextNumber = 1, defaultType = 'bill' }) {
+  const [docType, setDocType] = useState(defaultType);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
@@ -237,9 +237,9 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
   };
 
   return (
-    <div className="bg-white rounded-xl border border-zinc-250/90 shadow-xs overflow-hidden">
-      {/* Header */}
-      <div className="bg-white border-b border-zinc-150 px-6 py-5 flex justify-between items-center flex-wrap gap-3">
+    <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden">
+      {/* Header Controls */}
+      <div className="bg-white border-b border-zinc-200 px-6 py-5 flex justify-between items-center flex-wrap gap-3">
         <div>
           <h2 className="text-base font-extrabold text-zinc-800 tracking-tight">
             {initialData ? 'Edit Document' : 'Generate New Document'}
@@ -289,7 +289,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                 type="text"
                 value={docNumber}
                 onChange={(e) => setDocNumber(e.target.value)}
-                className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-55 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-zinc-800 dark:text-zinc-200"
+                className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-zinc-800 dark:text-zinc-200"
                 required
               />
             </div>
@@ -307,7 +307,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                 type="date"
                 value={date}
                 onChange={(e) => handleDateChange(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-55 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-zinc-800 dark:text-zinc-200"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-zinc-800 dark:text-zinc-200"
                 required
               />
             </div>
@@ -326,7 +326,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                   type="date"
                   value={validUntil}
                   onChange={(e) => handleValidUntilChange(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-55 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-zinc-800 dark:text-zinc-200"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-zinc-800 dark:text-zinc-200"
                 />
               </div>
             </div>
@@ -334,7 +334,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
         </div>
 
         {/* Customer Details Card */}
-        <div className="bg-zinc-50/70 dark:bg-zinc-800/20 p-5 rounded-xl border border-zinc-150 dark:border-zinc-800/50 space-y-4">
+        <div className="bg-zinc-50/70 dark:bg-zinc-800/20 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800/50 space-y-4">
           <h3 className="text-xs font-bold text-teal-800 dark:text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
             <User className="w-3.5 h-3.5" />
             Client / Customer Information
@@ -441,7 +441,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                     }}
                     onFocus={() => setShowSuggestions(index)}
                     onBlur={() => setTimeout(() => setShowSuggestions(null), 200)}
-                    className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-850 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200 transition-all"
+                    className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200 transition-all"
                   />
                   {showSuggestions === index && (
                     <div className="absolute z-20 w-full mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl max-h-52 overflow-y-auto">
@@ -452,7 +452,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                           key={sIdx}
                           type="button"
                           onMouseDown={() => selectSuggestion(index, sug)}
-                          className="w-full text-left px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200 hover:bg-teal-50 dark:hover:bg-zinc-750 transition-colors border-b border-zinc-100 dark:border-zinc-800 last:border-b-0"
+                          className="w-full text-left px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200 hover:bg-teal-50 dark:hover:bg-zinc-700 transition-colors border-b border-zinc-100 dark:border-zinc-800 last:border-b-0"
                         >
                           {sug}
                         </button>
@@ -474,7 +474,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                       value={item.qty}
                       onChange={(e) => updateItemRow(item.id, 'qty', e.target.value)}
                       placeholder="Qty"
-                      className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-850 text-sm text-center focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200"
+                      className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm text-center focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200"
                       required
                     />
                   </div>
@@ -488,7 +488,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                       <select
                         value={item.unit}
                         onChange={(e) => updateItemRow(item.id, 'unit', e.target.value)}
-                        className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-850 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200"
+                        className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200"
                       >
                         {UNITS.map(u => (
                           <option key={u} value={u}>{u}</option>
@@ -600,13 +600,13 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows="3"
-                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-850 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200 resize-none transition-all"
+                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200 resize-none transition-all"
               />
             </div>
           </div>
 
           {/* Pricing Totals list */}
-          <div className="bg-zinc-50 dark:bg-zinc-800/25 p-5 rounded-xl border border-zinc-150 dark:border-zinc-800/50 space-y-3.5 h-fit">
+          <div className="bg-zinc-50 dark:bg-zinc-800/25 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800/50 space-y-3.5 h-fit">
             <h4 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
               Summary Details
             </h4>
@@ -649,7 +649,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
             </div>
 
             <div className="border-t border-zinc-200 pt-3 flex justify-between items-center">
-              <span className="text-sm font-bold text-zinc-750">Grand Total</span>
+              <span className="text-sm font-bold text-zinc-700">Grand Total</span>
               <span className="text-xl font-extrabold text-[#0b2240]">
                 ₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </span>

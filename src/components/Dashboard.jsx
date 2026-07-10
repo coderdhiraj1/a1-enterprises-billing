@@ -64,7 +64,7 @@ export default function Dashboard({ documents, onCreateBill, onCreateQuotation, 
             <div className="text-2xl sm:text-3xl font-black text-zinc-950 tracking-tight">
               ₹{totalInvoiced.toLocaleString('en-IN')}
             </div>
-            <div className="text-[10px] text-zinc-450 font-bold uppercase tracking-wider">
+            <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
               Total Sales
             </div>
             <div className="text-[10px] text-zinc-400 font-medium">
@@ -82,7 +82,7 @@ export default function Dashboard({ documents, onCreateBill, onCreateQuotation, 
             <div className="text-2xl sm:text-3xl font-black text-zinc-955 tracking-tight">
               ₹{totalCollected.toLocaleString('en-IN')}
             </div>
-            <div className="text-[10px] text-zinc-450 font-bold uppercase tracking-wider">
+            <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
               Collected
             </div>
             <div className="text-[10px] text-zinc-400 font-medium">
@@ -100,7 +100,7 @@ export default function Dashboard({ documents, onCreateBill, onCreateQuotation, 
             <div className="text-2xl sm:text-3xl font-black text-zinc-955 tracking-tight">
               ₹{totalPending.toLocaleString('en-IN')}
             </div>
-            <div className="text-[10px] text-zinc-450 font-bold uppercase tracking-wider">
+            <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
               Pending
             </div>
             <div className="text-[10px] text-zinc-400 font-medium">
@@ -118,7 +118,7 @@ export default function Dashboard({ documents, onCreateBill, onCreateQuotation, 
             <div className="text-2xl sm:text-3xl font-black text-zinc-955 tracking-tight">
               {quotations.length}
             </div>
-            <div className="text-[10px] text-zinc-450 font-bold uppercase tracking-wider">
+            <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
               Quotations
             </div>
             <div className="text-[10px] text-zinc-400 font-medium">
@@ -133,7 +133,7 @@ export default function Dashboard({ documents, onCreateBill, onCreateQuotation, 
 
       {/* Recent Activity Section */}
       <div className="bg-white rounded-xl border border-zinc-200/80 shadow-xs overflow-hidden">
-        <div className="px-5 py-4.5 border-b border-zinc-150 flex justify-between items-center bg-zinc-50/20">
+        <div className="px-5 py-4.5 border-b border-zinc-200 flex justify-between items-center bg-zinc-50/20">
           <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wider">
             Recently Updated Invoices & Quotes
           </h3>
@@ -148,7 +148,7 @@ export default function Dashboard({ documents, onCreateBill, onCreateQuotation, 
 
         {recentDocs.length === 0 ? (
           <div className="p-10 text-center">
-            <p className="text-sm text-zinc-450">No documents created yet. Get started by clicking "New Bill" above.</p>
+            <p className="text-sm text-zinc-400">No documents created yet. Get started by clicking "New Bill" above.</p>
           </div>
         ) : (
           <div className="divide-y divide-zinc-100">
@@ -169,7 +169,7 @@ export default function Dashboard({ documents, onCreateBill, onCreateQuotation, 
                       {isBill ? <Receipt className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-zinc-450">
+                      <div className="text-xs font-semibold text-zinc-400">
                         {doc.number} • {new Date(doc.date).toLocaleDateString('en-IN', {
                           day: 'numeric',
                           month: 'short',

@@ -77,3 +77,18 @@ body {
 .font-signature {
   font-family: 'Dancing Script', cursive;
 }
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-bg {
+  background: linear-gradient(90deg, #f4f6f8 25%, #e4e6eb 50%, #f4f6f8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}

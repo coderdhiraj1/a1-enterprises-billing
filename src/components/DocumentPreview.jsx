@@ -3,6 +3,8 @@
 import React from 'react';
 import { ArrowLeft, Printer, Download, CreditCard, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
+import html2canvas from 'html2canvas-pro';
+import { jsPDF } from 'jspdf';
 
 // Indian Number to Words Converter
 function numberToIndianWords(amount) {
@@ -90,18 +92,70 @@ export default function DocumentPreview({ doc, onBack }) {
     }
   }, []);
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    try {
+      const element = document.getElementById('invoice-document');
+      if (!element) return;
+
+      // Temporarily strip card border, shadow and rounding styles for clean A4 PDF boundaries
+      element.classList.remove('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
+
+      const canvas = await html2canvas(element, {
+        scale: 2, // High resolution scale factor (2x density)
+        useCORS: true,
+        logging: true
+      });
+
+      // Restore card styling properties immediately after DOM canvas snapshot
+      element.classList.add('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 210; // A4 size width in mm
+      const pageHeight = 297; // A4 size height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const sanitizedName = doc.customerName
+        ? doc.customerName.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_')
+        : 'Customer';
+      pdf.save(`${doc.number}_${sanitizedName}.pdf`);
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      alert('Failed to generate PDF file download. Error: ' + error.message);
+
+      // Restore card styling properties in case of failure
+      const element = document.getElementById('invoice-document');
+      if (element) {
+        element.classList.add('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
+      }
+    }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-[800px] mx-auto w-full space-y-6">
       {/* Action Header bar (Hidden on Print) */}
       <div className="print:hidden bg-white p-4 rounded-xl border border-zinc-200 shadow-xs flex items-center justify-between">
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-2 text-xs font-bold text-zinc-550 hover:text-zinc-800 transition-colors cursor-pointer"
+          className="flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-zinc-800 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to list
@@ -113,29 +167,26 @@ export default function DocumentPreview({ doc, onBack }) {
             onClick={handlePrint}
             className="flex items-center gap-1.5 px-4.5 py-2 bg-[#0b2240] hover:bg-[#1a3556] text-white rounded-lg text-xs font-bold shadow-xs transition-all cursor-pointer"
           >
-            <Printer className="w-4 h-4" />
-            Print / Save as PDF
+            <Download className="w-4 h-4" />
+            Download PDF
           </button>
         </div>
       </div>
 
       {/* Invoice Area */}
-      <div className="flex justify-center w-full">
-        <div 
-          id="invoice-document"
-          className="w-full max-w-[800px] bg-white text-zinc-850 p-6 sm:p-10 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none"
-        >
+      <div 
+        id="invoice-document"
+        className="w-full bg-white text-zinc-800 p-6 sm:p-10 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none"
+      >
           {/* Header Row */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b-2 border-[#0b2240]">
             {/* Seller Logo & Info */}
             <div className="space-y-3">
               <div className="relative w-64 h-24 max-w-full">
-                <Image
+                <img
                   src="/logo.png"
                   alt="A-1 Enterprises Fabrication Works"
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  priority
+                  className="w-full h-full object-contain"
                 />
               </div>
               <div className="text-[11px] text-zinc-700 font-semibold space-y-0.5 mt-2">
@@ -189,7 +240,7 @@ export default function DocumentPreview({ doc, onBack }) {
           {/* Client Details Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 py-6 border-b border-zinc-200">
             <div>
-              <h3 className="text-[11px] font-bold text-zinc-550 uppercase tracking-wider mb-2">
+              <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                 Billed To:
               </h3>
               <div className="text-xs space-y-1">
@@ -208,7 +259,7 @@ export default function DocumentPreview({ doc, onBack }) {
             </div>
 
             <div className="text-xs space-y-1.5 sm:text-right">
-              <h3 className="text-[11px] font-bold text-zinc-550 uppercase tracking-wider mb-2">
+              <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                 Service Provider:
               </h3>
               <p className="text-sm font-black text-[#0b2240]">A-1 Enterprises</p>
@@ -252,7 +303,7 @@ export default function DocumentPreview({ doc, onBack }) {
             {/* Amount In Words */}
             <div className="sm:col-span-7 space-y-4">
               <div className="bg-zinc-50 p-3.5 rounded-xl border border-zinc-200">
-                <p className="text-[10px] font-bold text-zinc-550 uppercase tracking-wider">
+                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
                   Amount in Words:
                 </p>
                 <p className="text-xs font-bold text-[#b2801e] mt-1 capitalize font-semibold leading-relaxed">
@@ -320,7 +371,7 @@ export default function DocumentPreview({ doc, onBack }) {
                 <CreditCard className="w-3.5 h-3.5 text-[#b2801e]" />
                 Payment Bank Details:
               </h4>
-              <div className="border border-zinc-350 rounded-xl p-4 bg-zinc-50/50 space-y-2 max-w-sm">
+              <div className="border border-zinc-300 rounded-xl p-4 bg-zinc-50/50 space-y-2 max-w-sm">
                 <div className="flex justify-between text-xs pb-1.5 border-b border-zinc-200">
                   <span className="text-zinc-600 font-bold">Bank Name:</span>
                   <span className="font-extrabold text-zinc-900">{bankInfo.bankName}</span>
@@ -348,7 +399,7 @@ export default function DocumentPreview({ doc, onBack }) {
               </div>
               
               <div className="space-y-1 pt-6 text-xs">
-                <p className="text-zinc-550 font-bold">For A-1 Enterprises</p>
+                <p className="text-zinc-500 font-bold">For A-1 Enterprises</p>
                 <div className="h-12 flex items-center justify-end">
                   <span className="font-signature text-xl text-[#0b2240] tracking-wider select-none pr-2">
                     Rakesh Sharma
@@ -362,6 +413,5 @@ export default function DocumentPreview({ doc, onBack }) {
           </div>
         </div>
       </div>
-    </div>
   );
 }

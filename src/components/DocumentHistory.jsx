@@ -1,34 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Search, Filter, Eye, Copy, Trash2, CheckCircle2, XCircle, FileText, Receipt, ArrowRight } from 'lucide-react';
+import React from 'react';
+import { Search, Eye, Pencil, Trash2, CheckCircle2, XCircle, FileText, Receipt } from 'lucide-react';
 
-export default function DocumentHistory({ documents, onView, onEdit, onDelete, onTogglePaid }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all'); // 'all', 'bill', 'quotation'
-
-  const filteredDocs = documents.filter(doc => {
-    const matchesSearch = 
-      doc.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (doc.customerPhone && doc.customerPhone.includes(searchTerm)) ||
-      doc.number.toLowerCase().includes(searchTerm.toLowerCase());
-      
-    const matchesType = filterType === 'all' || doc.type === filterType;
-    
-    return matchesSearch && matchesType;
-  });
-
+export default function DocumentHistory({ 
+  documents = [], 
+  onView, 
+  onEdit, 
+  onDelete, 
+  onTogglePaid,
+  // Pagination & Filter parameters
+  page = 1,
+  totalPages = 1,
+  totalDocs = 0,
+  onPageChange,
+  searchTerm = '',
+  onSearchChange,
+  typeFilter = 'all',
+  onTypeFilterChange,
+  isSearching = false
+}) {
   return (
     <div className="space-y-6">
       {/* Search & Filter Bar */}
-      <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/80 shadow-sm flex flex-col md:flex-row gap-3">
+      <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
             type="text"
             placeholder="Search by customer name, phone, or bill/quote #..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-100 transition-all placeholder-zinc-400"
           />
         </div>
@@ -40,15 +42,16 @@ export default function DocumentHistory({ documents, onView, onEdit, onDelete, o
             { value: 'quotation', label: 'Quotations Only', icon: FileText }
           ].map(opt => {
             const Icon = opt.icon;
+            const isActive = typeFilter === opt.value;
             return (
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setFilterType(opt.value)}
+                onClick={() => onTypeFilterChange(opt.value)}
                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                  filterType === opt.value
+                  isActive
                     ? 'bg-[#0b2240] border-[#0b2240] text-white shadow-sm'
-                    : 'bg-white border-zinc-200 text-zinc-650 hover:bg-zinc-50'
+                    : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -60,24 +63,24 @@ export default function DocumentHistory({ documents, onView, onEdit, onDelete, o
       </div>
 
       {/* Documents List */}
-      {filteredDocs.length === 0 ? (
-        <div className="bg-white rounded-2xl p-12 border border-zinc-150 text-center shadow-sm max-w-xl mx-auto mt-6">
+      {documents.length === 0 ? (
+        <div className="bg-white rounded-2xl p-12 border border-zinc-200/80 text-center shadow-xs max-w-xl mx-auto mt-6">
           <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <FileText className="w-8 h-8 text-[#b2801e]" />
           </div>
           <h3 className="text-base font-bold text-zinc-800">No documents found</h3>
           <p className="text-sm text-zinc-500 mt-2">
-            {searchTerm || filterType !== 'all'
+            {searchTerm || typeFilter !== 'all'
               ? "We couldn't find any documents matching your filters."
               : "You haven't generated any bills or quotations yet. Create one to get started!"}
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className={`space-y-4 transition-opacity duration-200 ${isSearching ? 'opacity-55 pointer-events-none' : ''}`}>
           {/* Document container card */}
           <div className="bg-white rounded-xl border border-zinc-200/80 shadow-xs divide-y divide-zinc-100 overflow-hidden">
             {/* Table Header (hidden on mobile, visible on tablet+) */}
-            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-zinc-50/50 text-[10px] font-bold text-zinc-450 uppercase tracking-wider">
+            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-zinc-50/50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
               <div className="col-span-2">Date & Number</div>
               <div className="col-span-4">Customer Details</div>
               <div className="col-span-2">Document Type</div>
@@ -86,7 +89,7 @@ export default function DocumentHistory({ documents, onView, onEdit, onDelete, o
             </div>
 
             {/* Document Rows */}
-            {filteredDocs.map(doc => {
+            {documents.map(doc => {
               const isBill = doc.type === 'bill';
               
               return (
@@ -103,14 +106,14 @@ export default function DocumentHistory({ documents, onView, onEdit, onDelete, o
                         year: 'numeric'
                       })}
                     </span>
-                    <span className="text-sm font-bold text-zinc-800">
+                    <span className="text-sm font-black text-zinc-800">
                       {doc.number}
                     </span>
                   </div>
 
                   {/* Customer Details */}
                   <div className="col-span-4 flex flex-col justify-center">
-                    <span className="text-sm font-extrabold text-zinc-850">
+                    <span className="text-sm font-extrabold text-zinc-800">
                       {doc.customerName}
                     </span>
                     {doc.customerPhone && (
@@ -129,12 +132,12 @@ export default function DocumentHistory({ documents, onView, onEdit, onDelete, o
                     }`}>
                       {isBill ? (
                         <>
-                          <Receipt className="w-3 h-3" />
+                          <Receipt className="w-3.5 h-3.5" />
                           Bill
                         </>
                       ) : (
                         <>
-                          <FileText className="w-3 h-3" />
+                          <FileText className="w-3.5 h-3.5" />
                           Quote
                         </>
                       )}
@@ -189,15 +192,15 @@ export default function DocumentHistory({ documents, onView, onEdit, onDelete, o
                       type="button"
                       onClick={() => onEdit(doc)}
                       className="hover:text-indigo-650 transition-colors cursor-pointer"
-                      title="Copy details / Edit"
+                      title="Edit Document"
                     >
-                      <Copy className="w-4 h-4" />
+                      <Pencil className="w-4 h-4" />
                     </button>
 
                     <button
                       type="button"
                       onClick={() => onDelete(doc.id)}
-                      className="hover:text-rose-600 transition-colors cursor-pointer"
+                      className="hover:text-rose-650 transition-colors cursor-pointer"
                       title="Delete invoice"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -207,6 +210,35 @@ export default function DocumentHistory({ documents, onView, onEdit, onDelete, o
               );
             })}
           </div>
+
+          {/* Pagination Controls Footer */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-zinc-200 bg-white px-6 py-4 rounded-xl shadow-xs border border-zinc-200/80">
+              <div className="text-xs text-zinc-500 font-bold">
+                Showing Page <span className="font-extrabold text-zinc-900">{page}</span> of{' '}
+                <span className="font-extrabold text-zinc-900">{totalPages}</span>
+                <span className="ml-2 font-bold text-zinc-400 normal-case tracking-normal">({totalDocs} items total)</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => onPageChange(page - 1)}
+                  disabled={page <= 1}
+                  className="px-3.5 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 text-xs font-bold disabled:opacity-45 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onPageChange(page + 1)}
+                  disabled={page >= totalPages}
+                  className="px-3.5 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 text-xs font-bold disabled:opacity-45 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
