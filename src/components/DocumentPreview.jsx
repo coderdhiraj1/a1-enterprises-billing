@@ -5,6 +5,7 @@ import { ArrowLeft, Printer, Download, CreditCard, ShieldCheck, Pencil, Loader2 
 import Image from 'next/image';
 import html2canvas from 'html2canvas-pro';
 import { jsPDF } from 'jspdf';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 // Indian Number to Words Converter
 function numberToIndianWords(amount) {
@@ -87,7 +88,7 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
       const screenWidth = measureRef.current ? measureRef.current.offsetWidth : window.innerWidth;
       
       if (screenWidth > 0 && screenWidth < 850) {
-        setPreviewZoom((screenWidth - 40) / 800); // 40px for margins
+        setPreviewZoom(screenWidth / 800);
       } else {
         setPreviewZoom(1);
       }
@@ -144,44 +145,40 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
       const element = document.getElementById('invoice-document');
       if (!element) return;
 
-      // Temporarily strip card border, shadow and rounding styles for clean A4 PDF boundaries
-      element.classList.remove('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
-      element.style.transform = 'none'; // reset transform for clean 1:1 capture
-
-      // Prevent page breaks inside specific elements by pushing them to the next page
-      const avoidElements = element.querySelectorAll('.avoid-break');
-      const originalMargins = new Map();
-      // Calculate approximately how many DOM pixels equal one PDF page content height
-      // PDF A4 is 210x297mm. We have 10mm margins on all sides. So content is 190x277mm.
-      const domPageHeight = (element.offsetWidth * 277) / 190; 
-
-      avoidElements.forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        const parentRect = element.getBoundingClientRect();
-        const offsetTop = rect.top - parentRect.top;
-        
-        const pageOfTop = Math.floor(offsetTop / domPageHeight);
-        const pageOfBottom = Math.floor((offsetTop + rect.height) / domPageHeight);
-        
-        if (pageOfTop !== pageOfBottom) {
-          const distanceToNextPage = ((pageOfTop + 1) * domPageHeight) - offsetTop;
-          const currentMargin = parseFloat(window.getComputedStyle(el).marginTop) || 0;
-          originalMargins.set(el, el.style.marginTop);
-          // Add distance to the existing margin, plus a small 5px buffer
-          el.style.marginTop = `${currentMargin + distanceToNextPage + 5}px`;
-        }
-      });
-
       const canvas = await html2canvas(element, {
         scale: 2, // High resolution scale factor (2x density)
         useCORS: true,
-        logging: true
-      });
+        logging: false,
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.getElementById('invoice-document');
+          if (!clonedElement) return;
 
-      // Restore card styling properties and margins
-      element.classList.add('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
-      avoidElements.forEach((el) => {
-        el.style.marginTop = originalMargins.get(el) || '';
+          // Strip card border, shadow and rounding styles for clean A4 PDF boundaries
+          clonedElement.classList.remove('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
+          clonedElement.style.transform = 'none'; // reset transform for clean 1:1 capture
+
+          // Prevent page breaks inside specific elements by pushing them to the next page
+          const avoidElements = clonedElement.querySelectorAll('.avoid-break');
+          // Calculate approximately how many DOM pixels equal one PDF page content height
+          // PDF A4 is 210x297mm. We have 10mm margins on all sides. So content is 190x277mm.
+          const domPageHeight = (clonedElement.offsetWidth * 277) / 190; 
+
+          avoidElements.forEach((el) => {
+            const rect = el.getBoundingClientRect();
+            const parentRect = clonedElement.getBoundingClientRect();
+            const offsetTop = rect.top - parentRect.top;
+            
+            const pageOfTop = Math.floor(offsetTop / domPageHeight);
+            const pageOfBottom = Math.floor((offsetTop + rect.height) / domPageHeight);
+            
+            if (pageOfTop !== pageOfBottom) {
+              const distanceToNextPage = ((pageOfTop + 1) * domPageHeight) - offsetTop;
+              const currentMargin = parseFloat(window.getComputedStyle(el).marginTop) || 0;
+              // Add distance to the existing margin, plus a small 5px buffer
+              el.style.marginTop = `${currentMargin + distanceToNextPage + 5}px`;
+            }
+          });
+        }
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.75);
@@ -191,7 +188,7 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
         format: 'a4'
       });
 
-      const margin = 10; // 10mm margin for clean padding
+      const margin = 4; // reduced from 10mm since HTML padding is already captured
       const pdfWidth = 210; 
       const pdfHeight = 297; 
       const contentWidth = pdfWidth - (2 * margin);
@@ -233,13 +230,6 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
     } catch (error) {
       console.error('Failed to generate PDF:', error);
       alert('Failed to generate PDF file download. Error: ' + error.message);
-    } finally {
-      // Restore card styling properties in both success and failure cases
-      const element = document.getElementById('invoice-document');
-      if (element) {
-        element.classList.add('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
-        element.style.transform = previewZoom < 1 ? `scale(${previewZoom})` : 'none';
-      }
     }
   };
 
@@ -288,14 +278,24 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
 
       {/* Invoice Area Container */}
       <div className="w-full pb-4 flex justify-center overflow-visible">
-        {/* Dynamic Wrapper that perfectly fits the scaled document to prevent scrollbars */}
-        <div 
-          style={{ 
-            width: previewZoom < 1 ? 800 * previewZoom : '100%', 
-            height: previewZoom < 1 ? docHeight * previewZoom : 'auto',
-            position: 'relative'
-          }}
+        <TransformWrapper
+          disabled={previewZoom >= 1}
+          initialScale={1}
+          minScale={1}
+          maxScale={3}
+          wheel={{ disabled: true }} // Disable mouse wheel zoom for better desktop UX
+          pinch={{ disabled: previewZoom >= 1 }}
+          doubleClick={{ disabled: previewZoom >= 1 }}
         >
+          <TransformComponent wrapperStyle={{ width: previewZoom < 1 ? 800 * previewZoom : '100%', height: previewZoom < 1 ? docHeight * previewZoom : 'auto', overflow: 'visible' }}>
+            {/* Dynamic Wrapper that perfectly fits the scaled document to prevent scrollbars */}
+            <div 
+              style={{ 
+                width: previewZoom < 1 ? 800 * previewZoom : '100%', 
+                height: previewZoom < 1 ? docHeight * previewZoom : 'auto',
+                position: 'relative'
+              }}
+            >
           <div 
             id="invoice-document"
             ref={documentRef}
@@ -303,7 +303,7 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
               transform: previewZoom < 1 ? `scale(${previewZoom})` : 'none',
               transformOrigin: 'top left'
             }}
-            className={`w-[800px] min-w-[800px] bg-white text-zinc-800 p-10 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none ${previewZoom < 1 ? 'absolute top-0 left-0' : 'mx-auto'}`}
+            className={`w-[800px] min-w-[800px] bg-white text-zinc-800 p-8 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none ${previewZoom < 1 ? 'absolute top-0 left-0' : 'mx-auto'}`}
           >
           {/* Header Row */}
           <div className="flex flex-row justify-between items-start gap-4 pb-6 border-b-2 border-[#0b2240]">
@@ -542,6 +542,8 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
           </div>
         </div>
         </div>
+        </TransformComponent>
+        </TransformWrapper>
       </div>
     </div>
   );
