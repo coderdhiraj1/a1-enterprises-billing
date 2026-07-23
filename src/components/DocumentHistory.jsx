@@ -23,39 +23,37 @@ export default function DocumentHistory({
   return (
     <div className="space-y-6">
       {/* Search & Filter Bar */}
-      <div className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs flex flex-col md:flex-row gap-3">
+      <div className="bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-xs flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
             type="text"
-            placeholder="Search by customer name, phone, or bill/quote #..."
+            placeholder="Search documents by name, phone, or number..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-100 transition-all placeholder-zinc-400"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:ring-2 focus:ring-[#0b2240]/20 focus:border-[#0b2240] text-zinc-800 transition-all placeholder-zinc-400 font-medium"
           />
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex bg-zinc-100/80 p-1.5 rounded-xl">
           {[
-            { value: 'all', label: 'All Docs', icon: FileText },
-            { value: 'bill', label: 'Bills Only', icon: Receipt },
-            { value: 'quotation', label: 'Quotations Only', icon: FileText }
+            { value: 'all', label: 'All Docs' },
+            { value: 'bill', label: 'Invoices' },
+            { value: 'quotation', label: 'Quotations' }
           ].map(opt => {
-            const Icon = opt.icon;
             const isActive = typeFilter === opt.value;
             return (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => onTypeFilterChange(opt.value)}
-                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-[#0b2240] border-[#0b2240] text-white shadow-sm'
-                    : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'
+                    ? 'bg-white shadow-sm text-[#0b2240]'
+                    : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{opt.label}</span>
+                {opt.label}
               </button>
             );
           })}
@@ -80,10 +78,10 @@ export default function DocumentHistory({
           {/* Document container card */}
           <div className="bg-white rounded-xl border border-zinc-200/80 shadow-xs divide-y divide-zinc-100 overflow-hidden">
             {/* Table Header (hidden on mobile, visible on tablet+) */}
-            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-zinc-50/50 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-zinc-50/80 border-b border-zinc-200 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
               <div className="col-span-2">Date & Number</div>
-              <div className="col-span-4">Customer Details</div>
-              <div className="col-span-2">Document Type</div>
+              <div className="col-span-3">Customer Details</div>
+              <div className="col-span-3">Document Status</div>
               <div className="col-span-2 text-right">Total Amount</div>
               <div className="col-span-2 text-right">Actions</div>
             </div>
@@ -95,113 +93,94 @@ export default function DocumentHistory({
               return (
                 <div
                   key={doc.id}
-                  className="p-4 md:px-6 md:py-4.5 grid grid-cols-1 md:grid-cols-12 gap-3 items-center hover:bg-zinc-50/30 transition-colors bg-white"
+                  onClick={() => onView(doc)}
+                  className="p-5 md:px-6 md:py-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-center hover:bg-zinc-50/80 transition-colors bg-white border-b border-zinc-100 last:border-0 cursor-pointer"
                 >
                   {/* Number & Date */}
-                  <div className="col-span-2 flex flex-col gap-0.5">
-                    <span className="text-[10px] font-semibold text-zinc-400">
+                  <div className="col-span-1 md:col-span-2 flex flex-row md:flex-col justify-between md:justify-start items-center md:items-start">
+                    <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider order-2 md:order-1">
                       {new Date(doc.date).toLocaleDateString('en-IN', {
                         day: 'numeric',
                         month: 'short',
                         year: 'numeric'
                       })}
                     </span>
-                    <span className="text-sm font-black text-zinc-800">
+                    <span className="text-sm font-black text-[#0b2240] order-1 md:order-2">
                       {doc.number}
                     </span>
                   </div>
 
                   {/* Customer Details */}
-                  <div className="col-span-4 flex flex-col justify-center">
+                  <div className="col-span-1 md:col-span-3 flex flex-col justify-center mt-2 md:mt-0">
                     <span className="text-sm font-extrabold text-zinc-800">
                       {doc.customerName}
                     </span>
                     {doc.customerPhone && (
-                      <span className="text-[11px] text-zinc-400 font-medium">
+                      <span className="text-[11px] text-zinc-500 font-medium mt-0.5">
                         {doc.customerPhone}
                       </span>
                     )}
                   </div>
 
                   {/* Document Type Badge & Bill Payment Status */}
-                  <div className="col-span-2 flex flex-wrap gap-2 items-center">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                  <div className="col-span-1 md:col-span-3 flex flex-wrap gap-2 items-center mt-3 md:mt-0">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
                       isBill
-                        ? 'bg-amber-50 text-[#b2801e]'
-                        : 'bg-indigo-50 text-[#4f46e5]'
+                        ? 'bg-[#0b2240]/5 text-[#0b2240] border border-[#0b2240]/10'
+                        : 'bg-[#b2801e]/10 text-[#b2801e] border border-[#b2801e]/20'
                     }`}>
-                      {isBill ? (
-                        <>
-                          <Receipt className="w-3.5 h-3.5" />
-                          Bill
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="w-3.5 h-3.5" />
-                          Quote
-                        </>
-                      )}
+                      {isBill ? <Receipt className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
+                      {isBill ? 'Invoice' : 'Quotation'}
                     </span>
 
                     {isBill && (
                       <button
                         type="button"
-                        onClick={() => onTogglePaid(doc.id)}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase transition-all cursor-pointer ${
+                        onClick={(e) => { e.stopPropagation(); onTogglePaid(doc.id); }}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
                           doc.paymentStatus === 'paid'
-                            ? 'bg-[#e2f0e7] text-[#2e6f40] hover:bg-[#d1e7d8]'
-                            : 'bg-[#fdf3e2] text-[#c97d1e] hover:bg-[#faecd1]'
+                            ? 'bg-[#2d5e3b]/10 text-[#2d5e3b] border-[#2d5e3b]/20 hover:bg-[#2d5e3b]/20'
+                            : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
                         }`}
                         title="Click to toggle payment status"
                       >
-                        {doc.paymentStatus === 'paid' ? (
-                          <>
-                            <CheckCircle2 className="w-3 h-3 text-[#2e6f40]" />
-                            Paid
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="w-3 h-3 text-[#c97d1e]" />
-                            Unpaid
-                          </>
-                        )}
+                        {doc.paymentStatus === 'paid' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                        {doc.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
                       </button>
                     )}
                   </div>
 
                   {/* Total Price */}
-                  <div className="col-span-2 md:text-right flex items-center md:justify-end gap-1.5 md:gap-0 mt-1 md:mt-0 pt-2 md:pt-0 border-t md:border-t-0 border-zinc-100">
-                    <span className="text-xs text-zinc-400 md:hidden font-medium">Grand Total:</span>
-                    <span className="text-sm font-extrabold text-zinc-900">
+                  <div className="col-span-1 md:col-span-2 flex justify-between md:justify-end items-center mt-3 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-zinc-100 border-dashed md:border-solid">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider md:hidden">Total Amount</span>
+                    <span className="text-[15px] font-black text-[#0b2240]">
                       ₹{doc.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
 
                   {/* Row Actions */}
-                  <div className="col-span-2 flex justify-end gap-4 mt-2 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-zinc-100 text-zinc-400">
+                  <div className="col-span-1 md:col-span-2 flex justify-end gap-2 mt-4 md:mt-0">
                     <button
                       type="button"
-                      onClick={() => onView(doc)}
-                      className="hover:text-zinc-800 transition-colors cursor-pointer"
-                      title="View & Print Invoice"
+                      onClick={(e) => { e.stopPropagation(); onView(doc); }}
+                      className="flex-1 md:flex-none flex justify-center items-center p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#0b2240] hover:text-white hover:border-[#0b2240] transition-colors"
+                      title="View & Print"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
-                    
                     <button
                       type="button"
-                      onClick={() => onEdit(doc)}
-                      className="hover:text-indigo-650 transition-colors cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); onEdit(doc); }}
+                      className="flex-1 md:flex-none flex justify-center items-center p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#b2801e] hover:text-white hover:border-[#b2801e] transition-colors"
                       title="Edit Document"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
-
                     <button
                       type="button"
-                      onClick={() => onDelete(doc.id)}
-                      className="hover:text-rose-650 transition-colors cursor-pointer"
-                      title="Delete invoice"
+                      onClick={(e) => { e.stopPropagation(); onDelete(doc.id); }}
+                      className="flex-1 md:flex-none flex justify-center items-center p-2 rounded-lg bg-rose-50 border border-rose-100 shadow-sm text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-colors"
+                      title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
