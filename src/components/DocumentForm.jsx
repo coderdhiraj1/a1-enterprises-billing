@@ -289,7 +289,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                 type="text"
                 value={docNumber}
                 onChange={(e) => setDocNumber(e.target.value)}
-                className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-zinc-800 dark:text-zinc-200"
+                className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-[#0b2240] focus:border-[#0b2240] transition-all text-zinc-800 dark:text-zinc-200"
                 required
               />
             </div>
@@ -307,7 +307,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                 type="date"
                 value={date}
                 onChange={(e) => handleDateChange(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-zinc-800 dark:text-zinc-200"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-[#0b2240] focus:border-[#0b2240] transition-all text-zinc-800 dark:text-zinc-200"
                 required
               />
             </div>
@@ -326,7 +326,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                   type="date"
                   value={validUntil}
                   onChange={(e) => handleValidUntilChange(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-zinc-800 dark:text-zinc-200"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-sm font-medium focus:ring-2 focus:ring-[#0b2240] focus:border-[#0b2240] transition-all text-zinc-800 dark:text-zinc-200"
                 />
               </div>
             </div>
@@ -335,7 +335,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
 
         {/* Customer Details Card */}
         <div className="bg-zinc-50/70 dark:bg-zinc-800/20 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800/50 space-y-4">
-          <h3 className="text-xs font-bold text-teal-800 dark:text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
+          <h3 className="text-xs font-bold text-[#0b2240] dark:text-[#dda137] uppercase tracking-wider flex items-center gap-1.5">
             <User className="w-3.5 h-3.5" />
             Client / Customer Information
           </h3>
@@ -354,7 +354,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                   placeholder="e.g. Rajesh Kumar"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-zinc-800 dark:text-zinc-200 transition-all"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-[#0b2240] focus:border-[#0b2240] text-zinc-800 dark:text-zinc-200 transition-all"
                   required
                 />
               </div>
@@ -373,7 +373,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                   placeholder="e.g. +91 98765 43210"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-zinc-800 dark:text-zinc-200 transition-all"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-[#0b2240] focus:border-[#0b2240] text-zinc-800 dark:text-zinc-200 transition-all"
                 />
               </div>
             </div>
@@ -391,7 +391,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                   value={customerAddress}
                   onChange={(e) => setCustomerAddress(e.target.value)}
                   rows="2"
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-zinc-800 dark:text-zinc-200 transition-all resize-none animate-none"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-[#0b2240] focus:border-[#0b2240] text-zinc-800 dark:text-zinc-200 transition-all resize-none animate-none"
                 />
               </div>
             </div>
@@ -441,7 +441,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                     }}
                     onFocus={() => setShowSuggestions(index)}
                     onBlur={() => setTimeout(() => setShowSuggestions(null), 200)}
-                    className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200 transition-all"
+                    className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-[#0b2240] text-zinc-800 dark:text-zinc-200 transition-all"
                   />
                   {showSuggestions === index && (
                     <div className="absolute z-20 w-full mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl max-h-52 overflow-y-auto">
@@ -452,7 +452,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                           key={sIdx}
                           type="button"
                           onMouseDown={() => selectSuggestion(index, sug)}
-                          className="w-full text-left px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200 hover:bg-teal-50 dark:hover:bg-zinc-700 transition-colors border-b border-zinc-100 dark:border-zinc-800 last:border-b-0"
+                          className="w-full text-left px-3 py-2 text-xs text-zinc-700 dark:text-zinc-200 hover:bg-[#0b2240]/5 dark:hover:bg-zinc-700 transition-colors border-b border-zinc-100 dark:border-zinc-800 last:border-b-0"
                         >
                           {sug}
                         </button>
@@ -474,7 +474,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                       value={item.qty}
                       onChange={(e) => updateItemRow(item.id, 'qty', e.target.value)}
                       placeholder="Qty"
-                      className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm text-center focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200"
+                      className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm text-center focus:ring-2 focus:ring-[#0b2240] text-zinc-800 dark:text-zinc-200"
                       required
                     />
                   </div>
@@ -488,7 +488,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                       <select
                         value={item.unit}
                         onChange={(e) => updateItemRow(item.id, 'unit', e.target.value)}
-                        className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200"
+                        className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-[#0b2240] text-zinc-800 dark:text-zinc-200"
                       >
                         {UNITS.map(u => (
                           <option key={u} value={u}>{u}</option>
@@ -505,7 +505,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                     <select
                       value={item.unit}
                       onChange={(e) => updateItemRow(item.id, 'unit', e.target.value)}
-                      className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-855 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200"
+                      className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-855 text-sm focus:ring-2 focus:ring-[#0b2240] text-zinc-800 dark:text-zinc-200"
                     >
                       {UNITS.map(u => (
                         <option key={u} value={u}>{u}</option>
@@ -527,7 +527,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                     placeholder="Rate"
                     value={item.rate === 0 ? '' : item.rate}
                     onChange={(e) => updateItemRow(item.id, 'rate', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-855 text-sm text-right focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200"
+                    className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-855 text-sm text-right focus:ring-2 focus:ring-[#0b2240] text-zinc-800 dark:text-zinc-200"
                     required
                   />
                 </div>
@@ -556,6 +556,15 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
               </div>
             ))}
           </div>
+          
+          <button
+            type="button"
+            onClick={addItemRow}
+            className="w-full flex items-center justify-center gap-2 py-3 mt-2 bg-zinc-50/50 hover:bg-zinc-100 dark:bg-zinc-800/30 dark:hover:bg-zinc-800/50 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 rounded-xl border border-dashed border-zinc-300 hover:border-zinc-400 dark:border-zinc-700 transition-colors text-sm font-semibold cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Add Another Item
+          </button>
         </div>
 
         {/* Calculation & Settings Card */}
@@ -600,7 +609,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows="3"
-                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-200 resize-none transition-all"
+                className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-[#0b2240] text-zinc-800 dark:text-zinc-200 resize-none transition-all"
               />
             </div>
           </div>
@@ -644,7 +653,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                 value={discount === 0 ? '' : discount}
                 onChange={(e) => setDiscount(Number(e.target.value))}
                 placeholder="₹0.00"
-                className="w-28 px-2.5 py-1 text-right text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 font-semibold focus:ring-2 focus:ring-teal-500 text-zinc-800 dark:text-zinc-100"
+                className="w-28 px-2.5 py-1 text-right text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 font-semibold focus:ring-2 focus:ring-[#0b2240] text-zinc-800 dark:text-zinc-100"
               />
             </div>
 

@@ -238,14 +238,17 @@ export default function AppLayout({ children }) {
             <Link
               key={link.href}
               href={link.href}
-              className={`flex flex-col items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
+              className={`flex flex-col items-center gap-1 min-w-[64px] px-3 py-2 rounded-2xl transition-all duration-300 ${
                 isActive
-                  ? 'text-[#dda137] font-bold scale-105'
-                  : 'text-zinc-400 hover:text-zinc-650'
+                  ? 'text-[#0b2240] bg-[#0b2240]/5 shadow-inner'
+                  : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50'
               }`}
             >
-              <Icon className="w-5 h-5" />
-              <span className="text-[10px] tracking-wide font-semibold">
+              <Icon 
+                className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} 
+                strokeWidth={isActive ? 2.5 : 2} 
+              />
+              <span className={`text-[10px] tracking-wide ${isActive ? 'font-black' : 'font-semibold'}`}>
                 {link.label === 'Dashboard' ? 'Home' : link.label === 'Create New' ? 'Create' : link.label === 'Billing History' ? 'History' : 'Settings'}
               </span>
             </Link>
