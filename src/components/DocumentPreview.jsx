@@ -71,10 +71,25 @@ function numberToIndianWords(amount) {
 export default function DocumentPreview({ doc, onBack, onEdit }) {
   const isBill = doc.type === 'bill';
   const [isEditing, setIsEditing] = React.useState(false);
+  const [previewZoom, setPreviewZoom] = React.useState(1);
 
   // Ensure page is at the very top when document loads so mobile users see the action header
   React.useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Calculate zoom to fit mobile screen width
+    const calculateZoom = () => {
+      const screenWidth = window.innerWidth;
+      if (screenWidth < 850) {
+        setPreviewZoom((screenWidth - 40) / 800); // 40px for margins
+      } else {
+        setPreviewZoom(1);
+      }
+    };
+    
+    calculateZoom();
+    window.addEventListener('resize', calculateZoom);
+    return () => window.removeEventListener('resize', calculateZoom);
   }, []);
 
   const handleEdit = () => {
@@ -110,6 +125,7 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
 
       // Temporarily strip card border, shadow and rounding styles for clean A4 PDF boundaries
       element.classList.remove('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
+      element.style.zoom = 1; // reset zoom for clean 1:1 capture
 
       // Prevent page breaks inside specific elements by pushing them to the next page
       const avoidElements = element.querySelectorAll('.avoid-break');
@@ -196,11 +212,12 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
     } catch (error) {
       console.error('Failed to generate PDF:', error);
       alert('Failed to generate PDF file download. Error: ' + error.message);
-
-      // Restore card styling properties in case of failure
+    } finally {
+      // Restore card styling properties in both success and failure cases
       const element = document.getElementById('invoice-document');
       if (element) {
         element.classList.add('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
+        element.style.zoom = previewZoom;
       }
     }
   };
@@ -242,11 +259,12 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
         </div>
       </div>
 
-      {/* Invoice Area Container with horizontal scroll for mobile */}
-      <div className="w-full overflow-x-auto pb-4">
+      {/* Invoice Area Container */}
+      <div className="w-full flex justify-center pb-4 overflow-visible">
         <div 
           id="invoice-document"
-          className="w-[800px] min-w-[800px] mx-auto bg-white text-zinc-800 p-10 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none"
+          style={{ zoom: previewZoom }}
+          className="w-[800px] min-w-[800px] bg-white text-zinc-800 p-10 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none origin-top transition-transform"
         >
           {/* Header Row */}
           <div className="flex flex-row justify-between items-start gap-4 pb-6 border-b-2 border-[#0b2240]">
