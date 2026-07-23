@@ -72,6 +72,8 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
   const isBill = doc.type === 'bill';
   const [isEditing, setIsEditing] = React.useState(false);
   const [previewZoom, setPreviewZoom] = React.useState(1);
+  const [docHeight, setDocHeight] = React.useState(1123);
+  const documentRef = React.useRef(null);
 
   // Ensure page is at the very top when document loads so mobile users see the action header
   React.useEffect(() => {
@@ -89,7 +91,22 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
     
     calculateZoom();
     window.addEventListener('resize', calculateZoom);
-    return () => window.removeEventListener('resize', calculateZoom);
+    
+    // Observer to track document height dynamically so we can shrink the wrapper height
+    let resizeObserver;
+    if (documentRef.current) {
+      resizeObserver = new ResizeObserver((entries) => {
+        for (let entry of entries) {
+          setDocHeight(entry.target.offsetHeight);
+        }
+      });
+      resizeObserver.observe(documentRef.current);
+    }
+    
+    return () => {
+      window.removeEventListener('resize', calculateZoom);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
   }, []);
 
   const handleEdit = () => {
@@ -125,7 +142,7 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
 
       // Temporarily strip card border, shadow and rounding styles for clean A4 PDF boundaries
       element.classList.remove('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
-      element.style.zoom = 1; // reset zoom for clean 1:1 capture
+      element.style.transform = 'none'; // reset transform for clean 1:1 capture
 
       // Prevent page breaks inside specific elements by pushing them to the next page
       const avoidElements = element.querySelectorAll('.avoid-break');
@@ -217,7 +234,7 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
       const element = document.getElementById('invoice-document');
       if (element) {
         element.classList.add('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
-        element.style.zoom = previewZoom;
+        element.style.transform = previewZoom < 1 ? `scale(${previewZoom})` : 'none';
       }
     }
   };
@@ -260,12 +277,24 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
       </div>
 
       {/* Invoice Area Container */}
-      <div className="w-full pb-4 overflow-visible">
+      <div className="w-full pb-4 flex justify-center overflow-visible">
+        {/* Dynamic Wrapper that perfectly fits the scaled document to prevent scrollbars */}
         <div 
-          id="invoice-document"
-          style={{ zoom: previewZoom }}
-          className="w-[800px] min-w-[800px] mx-auto bg-white text-zinc-800 p-10 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none origin-top transition-transform"
+          style={{ 
+            width: previewZoom < 1 ? 800 * previewZoom : '100%', 
+            height: previewZoom < 1 ? docHeight * previewZoom : 'auto',
+            position: 'relative'
+          }}
         >
+          <div 
+            id="invoice-document"
+            ref={documentRef}
+            style={{ 
+              transform: previewZoom < 1 ? `scale(${previewZoom})` : 'none',
+              transformOrigin: 'top left'
+            }}
+            className={`w-[800px] min-w-[800px] bg-white text-zinc-800 p-10 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none ${previewZoom < 1 ? 'absolute top-0 left-0' : 'mx-auto'}`}
+          >
           {/* Header Row */}
           <div className="flex flex-row justify-between items-start gap-4 pb-6 border-b-2 border-[#0b2240]">
             {/* Seller Logo & Info */}
@@ -501,6 +530,7 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
