@@ -260,11 +260,11 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
       </div>
 
       {/* Invoice Area Container */}
-      <div className="w-full flex justify-center pb-4 overflow-visible">
+      <div className="w-full pb-4 overflow-visible">
         <div 
           id="invoice-document"
           style={{ zoom: previewZoom }}
-          className="w-[800px] min-w-[800px] bg-white text-zinc-800 p-10 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none origin-top transition-transform"
+          className="w-[800px] min-w-[800px] mx-auto bg-white text-zinc-800 p-10 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none origin-top transition-transform"
         >
           {/* Header Row */}
           <div className="flex flex-row justify-between items-start gap-4 pb-6 border-b-2 border-[#0b2240]">
