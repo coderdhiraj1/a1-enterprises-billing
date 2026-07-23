@@ -74,15 +74,19 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
   const [previewZoom, setPreviewZoom] = React.useState(1);
   const [docHeight, setDocHeight] = React.useState(1123);
   const documentRef = React.useRef(null);
+  const measureRef = React.useRef(null);
 
   // Ensure page is at the very top when document loads so mobile users see the action header
   React.useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Calculate zoom to fit mobile screen width
+    // Calculate zoom to fit mobile screen width accurately
     const calculateZoom = () => {
-      const screenWidth = window.innerWidth;
-      if (screenWidth < 850) {
+      // Use the measuring element's width instead of window.innerWidth 
+      // because mobile browsers artificially inflate innerWidth when large elements exist.
+      const screenWidth = measureRef.current ? measureRef.current.offsetWidth : window.innerWidth;
+      
+      if (screenWidth > 0 && screenWidth < 850) {
         setPreviewZoom((screenWidth - 40) / 800); // 40px for margins
       } else {
         setPreviewZoom(1);
@@ -240,7 +244,10 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
   };
 
   return (
-    <div className="max-w-[800px] mx-auto w-full space-y-6">
+    <div className="max-w-[800px] mx-auto w-full space-y-6 relative">
+      {/* Invisible element to accurately measure available width on mobile */}
+      <div ref={measureRef} className="w-full h-0 absolute top-0 left-0 pointer-events-none" />
+
       {/* Action Header bar (Hidden on Print) */}
       <div className="print:hidden bg-white p-4 rounded-xl border border-zinc-200 shadow-xs flex items-center justify-between">
         <button
