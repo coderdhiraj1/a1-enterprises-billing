@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowLeft, Printer, Download, CreditCard, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Printer, Download, CreditCard, ShieldCheck, Pencil, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import html2canvas from 'html2canvas-pro';
 import { jsPDF } from 'jspdf';
@@ -68,8 +68,19 @@ function numberToIndianWords(amount) {
   return str.replace(/\s+/g, ' ').trim();
 }
 
-export default function DocumentPreview({ doc, onBack }) {
+export default function DocumentPreview({ doc, onBack, onEdit }) {
   const isBill = doc.type === 'bill';
+  const [isEditing, setIsEditing] = React.useState(false);
+
+  // Ensure page is at the very top when document loads so mobile users see the action header
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    if (onEdit) onEdit();
+  };
   const [bankInfo, setBankInfo] = React.useState({
     bankName: 'ICICI BANK',
     accountName: 'Rakesh Sharma',
@@ -208,13 +219,25 @@ export default function DocumentPreview({ doc, onBack }) {
         </button>
 
         <div className="flex gap-3">
+          {onEdit && (
+            <button
+              type="button"
+              onClick={handleEdit}
+              disabled={isEditing}
+              className={`flex items-center gap-1.5 px-4.5 py-2 bg-white border border-zinc-200 text-zinc-600 hover:text-[#b2801e] hover:border-[#b2801e] hover:bg-[#b2801e]/5 rounded-lg text-xs font-bold shadow-xs transition-all ${isEditing ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              {isEditing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pencil className="w-4 h-4" />}
+              <span className="hidden sm:inline">{isEditing ? 'Loading...' : 'Edit'}</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={handlePrint}
             className="flex items-center gap-1.5 px-4.5 py-2 bg-[#0b2240] hover:bg-[#1a3556] text-white rounded-lg text-xs font-bold shadow-xs transition-all cursor-pointer"
           >
             <Download className="w-4 h-4" />
-            Download PDF
+            <span className="hidden sm:inline">Download PDF</span>
+            <span className="sm:hidden">Download</span>
           </button>
         </div>
       </div>

@@ -57,6 +57,7 @@ export default function DocumentPreviewPage() {
     <DocumentPreview
       doc={doc}
       onBack={() => router.push('/history')}
+      onEdit={() => router.push(`/create?edit=${doc.id}`)}
     />
   );
 }
