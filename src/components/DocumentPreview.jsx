@@ -219,13 +219,14 @@ export default function DocumentPreview({ doc, onBack }) {
         </div>
       </div>
 
-      {/* Invoice Area */}
-      <div 
-        id="invoice-document"
-        className="w-full bg-white text-zinc-800 p-6 sm:p-10 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none"
-      >
+      {/* Invoice Area Container with horizontal scroll for mobile */}
+      <div className="w-full overflow-x-auto pb-4">
+        <div 
+          id="invoice-document"
+          className="w-[800px] min-w-[800px] mx-auto bg-white text-zinc-800 p-10 border border-zinc-200 shadow-lg print:border-0 print:shadow-none print:p-0 rounded-2xl print:rounded-none"
+        >
           {/* Header Row */}
-          <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b-2 border-[#0b2240]">
+          <div className="flex flex-row justify-between items-start gap-4 pb-6 border-b-2 border-[#0b2240]">
             {/* Seller Logo & Info */}
             <div className="space-y-3">
               <div className="relative w-64 h-24 max-w-full">
@@ -243,12 +244,12 @@ export default function DocumentPreview({ doc, onBack }) {
             </div>
 
             {/* Document Meta */}
-            <div className="sm:text-right space-y-1.5 min-w-[200px]">
+            <div className="text-right space-y-1.5 min-w-[200px]">
               <h1 className="text-2xl font-black text-[#0b2240] uppercase tracking-wide">
                 {isBill ? 'Tax Invoice' : 'Quotation'}
               </h1>
               
-              <div className="grid grid-cols-2 sm:flex sm:flex-col gap-1 sm:gap-0.5 text-xs">
+              <div className="flex flex-col gap-0.5 text-xs">
                 <div className="text-zinc-600 font-bold">Document No:</div>
                 <div className="font-extrabold text-zinc-900">{doc.number}</div>
                 
@@ -284,7 +285,7 @@ export default function DocumentPreview({ doc, onBack }) {
           </div>
 
           {/* Client Details Section */}
-          <div className="avoid-break grid grid-cols-1 sm:grid-cols-2 gap-6 py-6 border-b border-zinc-200">
+          <div className="avoid-break grid grid-cols-2 gap-6 py-6 border-b border-zinc-200">
             <div>
               <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                 Billed To:
@@ -304,7 +305,7 @@ export default function DocumentPreview({ doc, onBack }) {
               </div>
             </div>
 
-            <div className="text-xs space-y-1.5 sm:text-right">
+            <div className="text-xs space-y-1.5 text-right">
               <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                 Service Provider:
               </h3>
@@ -345,9 +346,9 @@ export default function DocumentPreview({ doc, onBack }) {
           </table>
 
           {/* Summary Row */}
-          <div className="avoid-break grid grid-cols-1 sm:grid-cols-12 gap-6 mt-6 pt-4">
+          <div className="avoid-break grid grid-cols-12 gap-6 mt-6 pt-4">
             {/* Amount In Words */}
-            <div className="sm:col-span-7 space-y-4">
+            <div className="col-span-7 space-y-4">
               <div className="bg-zinc-50 p-3.5 rounded-xl border border-zinc-200">
                 <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
                   Amount in Words:
@@ -367,7 +368,7 @@ export default function DocumentPreview({ doc, onBack }) {
             </div>
 
             {/* Calculations Breakdown */}
-            <div className="sm:col-span-5 space-y-2.5 text-xs">
+            <div className="col-span-5 space-y-2.5 text-xs">
               <div className="flex justify-between font-bold">
                 <span className="text-zinc-500">Subtotal</span>
                 <span className="text-zinc-800 font-extrabold">
@@ -410,9 +411,9 @@ export default function DocumentPreview({ doc, onBack }) {
             </div>
           </div>
           {/* Payment & Signatures Row */}
-          <div className="avoid-break grid grid-cols-1 sm:grid-cols-12 gap-6 mt-8 pt-6 border-t border-zinc-200">
+          <div className="avoid-break grid grid-cols-12 gap-6 mt-8 pt-6 border-t border-zinc-200">
             {/* Bank Payment Mode Details */}
-            <div className="sm:col-span-7 space-y-3">
+            <div className="col-span-7 space-y-3">
               <div className="border-2 border-zinc-200 rounded-xl bg-white overflow-hidden max-w-sm shadow-sm">
                 <div className="bg-zinc-50/80 px-4 py-2.5 border-b border-zinc-200 flex items-center gap-2">
                    <CreditCard className="w-4 h-4 text-zinc-500" />
@@ -440,7 +441,7 @@ export default function DocumentPreview({ doc, onBack }) {
             </div>
 
             {/* Verification Sign off */}
-            <div className="sm:col-span-5 flex flex-col justify-between items-end min-h-[140px] text-right">
+            <div className="col-span-5 flex flex-col justify-between items-end min-h-[140px] text-right">
               <div className="flex items-center gap-1.5 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-500/10 px-2 py-1 rounded-md">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                 <span>Verified</span>
@@ -461,5 +462,6 @@ export default function DocumentPreview({ doc, onBack }) {
           </div>
         </div>
       </div>
+    </div>
   );
 }

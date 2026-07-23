@@ -196,7 +196,7 @@ export default function AppLayout({ children }) {
             >
               <Icon className="w-5 h-5" />
               <span className="text-[10px] tracking-wide font-semibold">
-                {link.label === 'Dashboard' ? 'Home' : link.label === 'Create Invoice' ? 'Create' : link.label === 'Billing History' ? 'History' : 'Settings'}
+                {link.label === 'Dashboard' ? 'Home' : link.label === 'Create New' ? 'Create' : link.label === 'Billing History' ? 'History' : 'Settings'}
               </span>
             </Link>
           );
