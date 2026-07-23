@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Search, Eye, Pencil, Trash2, CheckCircle2, XCircle, FileText, Receipt } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Eye, Pencil, Trash2, CheckCircle2, XCircle, FileText, Receipt, Loader2 } from 'lucide-react';
 
 export default function DocumentHistory({ 
   documents = [], 
@@ -20,6 +20,17 @@ export default function DocumentHistory({
   onTypeFilterChange,
   isSearching = false
 }) {
+  const [navigatingId, setNavigatingId] = useState(null);
+
+  const handleAction = (doc, actionType) => {
+    setNavigatingId(doc.id);
+    if (actionType === 'view') {
+      onView(doc);
+    } else if (actionType === 'edit') {
+      onEdit(doc);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Search & Filter Bar */}
@@ -94,9 +105,17 @@ export default function DocumentHistory({
               return (
                 <div
                   key={doc.id}
-                  onClick={() => onView(doc)}
-                  className="p-4 md:px-6 md:py-4 flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 items-stretch md:items-center hover:bg-zinc-50/80 transition-colors bg-white rounded-2xl md:rounded-none border border-zinc-200/80 md:border-0 shadow-sm md:shadow-none cursor-pointer"
+                  onClick={() => handleAction(doc, 'view')}
+                  className={`p-4 md:px-6 md:py-4 flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 items-stretch md:items-center hover:bg-zinc-50/80 transition-all bg-white rounded-2xl md:rounded-none border border-zinc-200/80 md:border-0 shadow-sm md:shadow-none cursor-pointer relative ${navigatingId === doc.id ? 'opacity-60 scale-[0.99] pointer-events-none' : ''}`}
                 >
+                  {/* Loading Overlay */}
+                  {navigatingId === doc.id && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/40 z-10 rounded-2xl md:rounded-none">
+                      <div className="bg-white p-2 rounded-full shadow-md">
+                        <Loader2 className="w-5 h-5 animate-spin text-[#0b2240]" />
+                      </div>
+                    </div>
+                  )}
                   {/* Number & Date */}
                   <div className="col-span-2 flex justify-between items-center md:flex-col md:items-start md:justify-center">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider order-2 md:order-1">
@@ -166,7 +185,7 @@ export default function DocumentHistory({
                   <div className="col-span-2 flex justify-end gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-zinc-100">
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); onView(doc); }}
+                      onClick={(e) => { e.stopPropagation(); handleAction(doc, 'view'); }}
                       className="flex-1 md:flex-none flex justify-center items-center py-1.5 md:p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#0b2240] hover:text-white hover:border-[#0b2240] transition-colors"
                       title="View & Print"
                     >
@@ -174,7 +193,7 @@ export default function DocumentHistory({
                     </button>
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); onEdit(doc); }}
+                      onClick={(e) => { e.stopPropagation(); handleAction(doc, 'edit'); }}
                       className="flex-1 md:flex-none flex justify-center items-center py-1.5 md:p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#b2801e] hover:text-white hover:border-[#b2801e] transition-colors"
                       title="Edit Document"
                     >
