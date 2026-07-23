@@ -76,7 +76,8 @@ export default function DocumentHistory({
       ) : (
         <div className={`space-y-4 transition-opacity duration-200 ${isSearching ? 'opacity-55 pointer-events-none' : ''}`}>
           {/* Document container card */}
-          <div className="bg-white rounded-xl border border-zinc-200/80 shadow-xs divide-y divide-zinc-100 overflow-hidden">
+          {/* Document container card */}
+          <div className="flex flex-col gap-4 md:gap-0 md:bg-white md:rounded-xl md:border md:border-zinc-200/80 md:shadow-xs md:divide-y md:divide-zinc-100 overflow-hidden">
             {/* Table Header (hidden on mobile, visible on tablet+) */}
             <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-zinc-50/80 border-b border-zinc-200 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
               <div className="col-span-2">Date & Number</div>
@@ -94,11 +95,11 @@ export default function DocumentHistory({
                 <div
                   key={doc.id}
                   onClick={() => onView(doc)}
-                  className="p-5 md:px-6 md:py-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-center hover:bg-zinc-50/80 transition-colors bg-white border-b border-zinc-100 last:border-0 cursor-pointer"
+                  className="p-4 md:px-6 md:py-4 flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 items-stretch md:items-center hover:bg-zinc-50/80 transition-colors bg-white rounded-2xl md:rounded-none border border-zinc-200/80 md:border-0 shadow-sm md:shadow-none cursor-pointer"
                 >
                   {/* Number & Date */}
-                  <div className="col-span-1 md:col-span-2 flex flex-row md:flex-col justify-between md:justify-start items-center md:items-start">
-                    <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider order-2 md:order-1">
+                  <div className="col-span-2 flex justify-between items-center md:flex-col md:items-start md:justify-center">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider order-2 md:order-1">
                       {new Date(doc.date).toLocaleDateString('en-IN', {
                         day: 'numeric',
                         month: 'short',
@@ -111,7 +112,7 @@ export default function DocumentHistory({
                   </div>
 
                   {/* Customer Details */}
-                  <div className="col-span-1 md:col-span-3 flex flex-col justify-center mt-2 md:mt-0">
+                  <div className="col-span-3 flex flex-col justify-center">
                     <span className="text-sm font-extrabold text-zinc-800">
                       {doc.customerName}
                     </span>
@@ -122,67 +123,70 @@ export default function DocumentHistory({
                     )}
                   </div>
 
-                  {/* Document Type Badge & Bill Payment Status */}
-                  <div className="col-span-1 md:col-span-3 flex flex-wrap gap-2 items-center mt-3 md:mt-0">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                      isBill
-                        ? 'bg-[#0b2240]/5 text-[#0b2240] border border-[#0b2240]/10'
-                        : 'bg-[#b2801e]/10 text-[#b2801e] border border-[#b2801e]/20'
-                    }`}>
-                      {isBill ? <Receipt className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
-                      {isBill ? 'Invoice' : 'Quotation'}
-                    </span>
+                  {/* Badges and Total Wrapper for Mobile Compactness */}
+                  <div className="flex justify-between items-center md:contents">
+                    {/* Document Type Badge & Bill Payment Status */}
+                    <div className="col-span-3 flex flex-wrap gap-2 items-center">
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-bold uppercase tracking-wider ${
+                        isBill
+                          ? 'bg-[#0b2240]/5 text-[#0b2240] border border-[#0b2240]/10'
+                          : 'bg-[#b2801e]/10 text-[#b2801e] border border-[#b2801e]/20'
+                      }`}>
+                        {isBill ? <Receipt className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
+                        {isBill ? 'Invoice' : 'Quotation'}
+                      </span>
 
-                    {isBill && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); onTogglePaid(doc.id); }}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
-                          doc.paymentStatus === 'paid'
-                            ? 'bg-[#2d5e3b]/10 text-[#2d5e3b] border-[#2d5e3b]/20 hover:bg-[#2d5e3b]/20'
-                            : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
-                        }`}
-                        title="Click to toggle payment status"
-                      >
-                        {doc.paymentStatus === 'paid' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                        {doc.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
-                      </button>
-                    )}
-                  </div>
+                      {isBill && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); onTogglePaid(doc.id); }}
+                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
+                            doc.paymentStatus === 'paid'
+                              ? 'bg-[#2d5e3b]/10 text-[#2d5e3b] border-[#2d5e3b]/20 hover:bg-[#2d5e3b]/20'
+                              : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                          }`}
+                          title="Click to toggle payment status"
+                        >
+                          {doc.paymentStatus === 'paid' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                          {doc.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+                        </button>
+                      )}
+                    </div>
 
-                  {/* Total Price */}
-                  <div className="col-span-1 md:col-span-2 flex justify-between md:justify-end items-center mt-3 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-zinc-100 border-dashed md:border-solid">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider md:hidden">Total Amount</span>
-                    <span className="text-[15px] font-black text-[#0b2240]">
-                      ₹{doc.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </span>
+                    {/* Total Price */}
+                    <div className="col-span-2 flex flex-col md:flex-row justify-end items-end md:items-center">
+                      <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider md:hidden">Total Amount</span>
+                      <span className="text-sm md:text-[15px] font-black text-[#0b2240]">
+                        ₹{doc.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Row Actions */}
-                  <div className="col-span-1 md:col-span-2 flex justify-end gap-2 mt-4 md:mt-0">
+                  <div className="col-span-2 flex justify-end gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-zinc-100">
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); onView(doc); }}
-                      className="flex-1 md:flex-none flex justify-center items-center p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#0b2240] hover:text-white hover:border-[#0b2240] transition-colors"
+                      className="flex-1 md:flex-none flex justify-center items-center py-1.5 md:p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#0b2240] hover:text-white hover:border-[#0b2240] transition-colors"
                       title="View & Print"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </button>
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); onEdit(doc); }}
-                      className="flex-1 md:flex-none flex justify-center items-center p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#b2801e] hover:text-white hover:border-[#b2801e] transition-colors"
+                      className="flex-1 md:flex-none flex justify-center items-center py-1.5 md:p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#b2801e] hover:text-white hover:border-[#b2801e] transition-colors"
                       title="Edit Document"
                     >
-                      <Pencil className="w-4 h-4" />
+                      <Pencil className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </button>
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); onDelete(doc.id); }}
-                      className="flex-1 md:flex-none flex justify-center items-center p-2 rounded-lg bg-rose-50 border border-rose-100 shadow-sm text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-colors"
+                      className="flex-1 md:flex-none flex justify-center items-center py-1.5 md:p-2 rounded-lg bg-rose-50 border border-rose-100 shadow-sm text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-colors"
                       title="Delete"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </button>
                   </div>
                 </div>
