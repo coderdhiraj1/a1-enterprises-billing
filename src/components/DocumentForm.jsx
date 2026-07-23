@@ -211,7 +211,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
       type: docType,
       number: docNumber,
       date,
-      validUntil: docType === 'quotation' ? validUntil : undefined,
+      validUntil: docType === 'quotation' ? validUntil : null,
       customerName,
       customerPhone,
       customerAddress,
@@ -230,7 +230,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
       discount: Number(discount),
       total,
       notes,
-      paymentStatus: docType === 'bill' ? 'unpaid' : undefined // Bills have payment status
+      paymentStatus: docType === 'bill' ? (initialData?.paymentStatus === 'paid' ? 'paid' : 'unpaid') : 'quote'
     };
     
     onSave(docData);

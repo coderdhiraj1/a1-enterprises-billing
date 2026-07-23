@@ -100,36 +100,82 @@ export default function DocumentPreview({ doc, onBack }) {
       // Temporarily strip card border, shadow and rounding styles for clean A4 PDF boundaries
       element.classList.remove('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
 
+      // Prevent page breaks inside specific elements by pushing them to the next page
+      const avoidElements = element.querySelectorAll('.avoid-break');
+      const originalMargins = new Map();
+      // Calculate approximately how many DOM pixels equal one PDF page content height
+      // PDF A4 is 210x297mm. We have 10mm margins on all sides. So content is 190x277mm.
+      const domPageHeight = (element.offsetWidth * 277) / 190; 
+
+      avoidElements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        const parentRect = element.getBoundingClientRect();
+        const offsetTop = rect.top - parentRect.top;
+        
+        const pageOfTop = Math.floor(offsetTop / domPageHeight);
+        const pageOfBottom = Math.floor((offsetTop + rect.height) / domPageHeight);
+        
+        if (pageOfTop !== pageOfBottom) {
+          const distanceToNextPage = ((pageOfTop + 1) * domPageHeight) - offsetTop;
+          const currentMargin = parseFloat(window.getComputedStyle(el).marginTop) || 0;
+          originalMargins.set(el, el.style.marginTop);
+          // Add distance to the existing margin, plus a small 5px buffer
+          el.style.marginTop = `${currentMargin + distanceToNextPage + 5}px`;
+        }
+      });
+
       const canvas = await html2canvas(element, {
         scale: 2, // High resolution scale factor (2x density)
         useCORS: true,
         logging: true
       });
 
-      // Restore card styling properties immediately after DOM canvas snapshot
+      // Restore card styling properties and margins
       element.classList.add('border', 'border-zinc-200', 'shadow-lg', 'rounded-2xl');
+      avoidElements.forEach((el) => {
+        el.style.marginTop = originalMargins.get(el) || '';
+      });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.75);
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
 
-      const imgWidth = 210; // A4 size width in mm
-      const pageHeight = 297; // A4 size height in mm
+      const margin = 10; // 10mm margin for clean padding
+      const pdfWidth = 210; 
+      const pdfHeight = 297; 
+      const contentWidth = pdfWidth - (2 * margin);
+      const contentHeight = pdfHeight - (2 * margin);
+      
+      const imgWidth = contentWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
       let heightLeft = imgHeight;
-      let position = 0;
+      let position = margin;
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+      
+      // Mask bottom margin of first page
+      pdf.setFillColor(255, 255, 255);
+      pdf.rect(0, pdfHeight - margin, pdfWidth, margin, 'F');
+      
+      heightLeft -= contentHeight;
 
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
+      while (heightLeft > 0) {
+        position = position - contentHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+        pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+        
+        // Mask top margin
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, pdfWidth, margin, 'F');
+        
+        // Mask bottom margin
+        pdf.rect(0, pdfHeight - margin, pdfWidth, margin, 'F');
+        
+        heightLeft -= contentHeight;
       }
 
       const sanitizedName = doc.customerName
@@ -238,7 +284,7 @@ export default function DocumentPreview({ doc, onBack }) {
           </div>
 
           {/* Client Details Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 py-6 border-b border-zinc-200">
+          <div className="avoid-break grid grid-cols-1 sm:grid-cols-2 gap-6 py-6 border-b border-zinc-200">
             <div>
               <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                 Billed To:
@@ -282,7 +328,7 @@ export default function DocumentPreview({ doc, onBack }) {
             </thead>
             <tbody>
               {doc.items.map((item, idx) => (
-                <tr key={idx} className="border-b border-zinc-300 hover:bg-zinc-50/50 font-bold">
+                <tr key={idx} className="avoid-break border-b border-zinc-300 hover:bg-zinc-50/50 font-bold">
                   <td className="py-3 px-3 text-center text-zinc-800">{idx + 1}</td>
                   <td className="py-3 px-2 text-zinc-900 font-extrabold whitespace-pre-line">{item.description}</td>
                   <td className="py-3 px-2 text-center text-zinc-900">{item.qty}</td>
@@ -299,7 +345,7 @@ export default function DocumentPreview({ doc, onBack }) {
           </table>
 
           {/* Summary Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 mt-6 pt-4">
+          <div className="avoid-break grid grid-cols-1 sm:grid-cols-12 gap-6 mt-6 pt-4">
             {/* Amount In Words */}
             <div className="sm:col-span-7 space-y-4">
               <div className="bg-zinc-50 p-3.5 rounded-xl border border-zinc-200">
@@ -364,29 +410,31 @@ export default function DocumentPreview({ doc, onBack }) {
             </div>
           </div>
           {/* Payment & Signatures Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 mt-8 pt-6 border-t border-zinc-200">
+          <div className="avoid-break grid grid-cols-1 sm:grid-cols-12 gap-6 mt-8 pt-6 border-t border-zinc-200">
             {/* Bank Payment Mode Details */}
             <div className="sm:col-span-7 space-y-3">
-              <h4 className="text-[11px] font-bold text-zinc-600 uppercase tracking-wider flex items-center gap-1">
-                <CreditCard className="w-3.5 h-3.5 text-[#b2801e]" />
-                Payment Bank Details:
-              </h4>
-              <div className="border border-zinc-300 rounded-xl p-4 bg-zinc-50/50 space-y-2 max-w-sm">
-                <div className="flex justify-between text-xs pb-1.5 border-b border-zinc-200">
-                  <span className="text-zinc-600 font-bold">Bank Name:</span>
-                  <span className="font-extrabold text-zinc-900">{bankInfo.bankName}</span>
+              <div className="border-2 border-zinc-200 rounded-xl bg-white overflow-hidden max-w-sm shadow-sm">
+                <div className="bg-zinc-50/80 px-4 py-2.5 border-b border-zinc-200 flex items-center gap-2">
+                   <CreditCard className="w-4 h-4 text-zinc-500" />
+                   <span className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider">Payment Bank Details</span>
                 </div>
-                <div className="flex justify-between text-xs pb-1.5 border-b border-zinc-200">
-                  <span className="text-zinc-600 font-bold">Account Name:</span>
-                  <span className="font-extrabold text-zinc-900">{bankInfo.accountName}</span>
-                </div>
-                <div className="flex justify-between text-xs pb-1.5 border-b border-zinc-200">
-                  <span className="text-zinc-600 font-bold">Account Number:</span>
-                  <span className="font-black text-zinc-950 tracking-wider font-mono">{bankInfo.accountNumber}</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-zinc-600 font-bold">IFSC Code:</span>
-                  <span className="font-black text-[#b2801e] font-mono uppercase">{bankInfo.ifscCode}</span>
+                <div className="p-4 space-y-3">
+                   <div className="flex justify-between text-xs">
+                     <span className="text-zinc-500 font-bold">Bank Name</span>
+                     <span className="font-extrabold text-zinc-900">{bankInfo.bankName}</span>
+                   </div>
+                   <div className="flex justify-between text-xs">
+                     <span className="text-zinc-500 font-bold">Account Name</span>
+                     <span className="font-extrabold text-zinc-900">{bankInfo.accountName}</span>
+                   </div>
+                   <div className="flex justify-between text-xs">
+                     <span className="text-zinc-500 font-bold">A/C Number</span>
+                     <span className="font-black text-zinc-950 font-mono tracking-wider">{bankInfo.accountNumber}</span>
+                   </div>
+                   <div className="flex justify-between text-xs pt-2.5 border-t border-dashed border-zinc-200">
+                     <span className="text-zinc-500 font-bold">IFSC Code</span>
+                     <span className="font-black text-[#b2801e] uppercase">{bankInfo.ifscCode}</span>
+                   </div>
                 </div>
               </div>
             </div>
