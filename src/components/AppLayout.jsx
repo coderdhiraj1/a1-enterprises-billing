@@ -166,6 +166,17 @@ export default function AppLayout({ children }) {
                 </Link>
               );
             })}
+            
+            {showInstallBtn && (
+              <button
+                type="button"
+                onClick={handleInstallApp}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold tracking-wide text-[#0b2240] bg-blue-50/50 hover:bg-blue-50 transition-all cursor-pointer text-left mt-2 border border-blue-100/50"
+              >
+                <Download className="w-4 h-4" />
+                Install App Shortcut
+              </button>
+            )}
           </nav>
         </div>
 
@@ -176,21 +187,10 @@ export default function AppLayout({ children }) {
             <p className="font-medium text-zinc-450">enterprises.a1@gmail.com</p>
           </div>
           
-          {showInstallBtn && (
-            <button
-              type="button"
-              onClick={handleInstallApp}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold bg-[#0b2240] text-white hover:bg-[#1a3556] transition-colors cursor-pointer shadow-md"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Download App
-            </button>
-          )}
-
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-red-650 hover:bg-red-50 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer shadow-sm border border-rose-100"
           >
             <LogOut className="w-3.5 h-3.5" />
             Logout Admin
