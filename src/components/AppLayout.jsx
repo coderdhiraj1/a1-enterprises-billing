@@ -11,7 +11,8 @@ import {
   Hammer, 
   Menu, 
   X,
-  LogOut
+  LogOut,
+  Download
 } from 'lucide-react';
 
 export default function AppLayout({ children }) {
@@ -20,6 +21,44 @@ export default function AppLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallBtn, setShowInstallBtn] = useState(false);
+
+  // PWA Service Worker & Install Prompt Setup
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
+    }
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    if (isMobile && !isStandalone) {
+      setShowInstallBtn(true);
+    }
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      if (isMobile) setShowInstallBtn(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowInstallBtn(false);
+      }
+      setDeferredPrompt(null);
+    } else {
+      alert('To install this app, tap the "Share" icon (on iOS) or browser menu (on Android) and select "Add to Home Screen".');
+    }
+  };
 
   // Authentication validation hook
   useEffect(() => {
@@ -137,6 +176,17 @@ export default function AppLayout({ children }) {
             <p className="font-medium text-zinc-450">enterprises.a1@gmail.com</p>
           </div>
           
+          {showInstallBtn && (
+            <button
+              type="button"
+              onClick={handleInstallApp}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold bg-[#0b2240] text-white hover:bg-[#1a3556] transition-colors cursor-pointer shadow-md"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Download App
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleLogout}

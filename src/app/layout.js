@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "A-1 Enterprises Billing Panel",
   description: "Generate bills, quotations, and manage history.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({ children }) {
