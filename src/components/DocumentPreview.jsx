@@ -249,7 +249,10 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
       <div ref={measureRef} className="w-full h-0 absolute top-0 left-0 pointer-events-none" />
 
       {/* Action Header bar (Hidden on Print) */}
-      <div className="print:hidden bg-white p-4 rounded-xl border border-zinc-200 shadow-xs flex items-center justify-between">
+      <div 
+        className="print:hidden bg-white p-4 rounded-xl border border-zinc-200 shadow-xs flex items-center justify-between mx-auto"
+        style={{ width: previewZoom < 1 ? 800 * previewZoom : '100%' }}
+      >
         <button
           type="button"
           onClick={onBack}
