@@ -67,19 +67,36 @@ export async function GET(req) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '10', 10);
 
-    const query = {};
-    
+    const company = searchParams.get('company') || 'all';
+
+    const andConditions = [];
     if (type !== 'all') {
-      query.type = type;
+      andConditions.push({ type });
     }
-    
     if (search) {
-      query.$or = [
-        { customerName: { $regex: search, $options: 'i' } },
-        { customerPhone: { $regex: search, $options: 'i' } },
-        { number: { $regex: search, $options: 'i' } }
-      ];
+      andConditions.push({
+        $or: [
+          { customerName: { $regex: search, $options: 'i' } },
+          { customerPhone: { $regex: search, $options: 'i' } },
+          { number: { $regex: search, $options: 'i' } }
+        ]
+      });
     }
+    if (company && company !== 'all') {
+      if (company === 'a1') {
+        andConditions.push({
+          $or: [
+            { companyId: 'a1' },
+            { companyId: { $exists: false } },
+            { companyId: null }
+          ]
+        });
+      } else {
+        andConditions.push({ companyId: company });
+      }
+    }
+
+    const query = andConditions.length > 0 ? { $and: andConditions } : {};
     
     if (paginate) {
       const skip = (page - 1) * limit;
@@ -117,10 +134,15 @@ export async function POST(req) {
     if (!data.id) {
       return NextResponse.json({ error: 'Document id is required' }, { status: 400 });
     }
+
+    const docPayload = {
+      ...data,
+      companyId: data.companyId || 'a1'
+    };
     
     const doc = await Document.findOneAndUpdate(
       { id: data.id },
-      data,
+      docPayload,
       { new: true, upsert: true }
     );
     

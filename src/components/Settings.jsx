@@ -5,18 +5,11 @@ import { Save, Building, CreditCard, Mail, Phone, MapPin, User, CheckCircle2, Lo
 import Image from 'next/image';
 import { FormShimmer } from './Shimmer';
 
-const DEFAULT_SELLER = {
-  name: 'A-1 Enterprises Fabrication Works',
-  phone: '+91-7759971969',
-  email: 'enterprises.a1@gmail.com',
-  address: 'Shani Mandir Road, Shivar Basti, Marunji, Pune, Maharashtra 411057',
-  bankName: 'ICICI BANK',
-  accountName: 'Rakesh Sharma',
-  accountNumber: '329701501647',
-  ifscCode: 'ICICI0003297'
-};
+import { COMPANY_DEFAULTS } from '@/lib/companies';
 
 export default function Settings({ onSaveSettings }) {
+  const [activeCompany, setActiveCompany] = useState('a1'); // 'a1' or 'shiv_mahima'
+  
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -30,45 +23,53 @@ export default function Settings({ onSaveSettings }) {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch('/api/seller')
+  const fetchSellerData = (companyKey) => {
+    setLoading(true);
+    fetch(`/api/seller?company=${companyKey}`)
       .then(res => res.json())
       .then(data => {
+        const defaults = COMPANY_DEFAULTS[companyKey] || COMPANY_DEFAULTS.a1;
         if (data && !data.error) {
-          setName(data.name || DEFAULT_SELLER.name);
-          setPhone(data.phone || DEFAULT_SELLER.phone);
-          setEmail(data.email || DEFAULT_SELLER.email);
-          setAddress(data.address || DEFAULT_SELLER.address);
-          setBankName(data.bankName || DEFAULT_SELLER.bankName);
-          setAccountName(data.accountName || DEFAULT_SELLER.accountName);
-          setAccountNumber(data.accountNumber || DEFAULT_SELLER.accountNumber);
-          setIfscCode(data.ifscCode || DEFAULT_SELLER.ifscCode);
+          setName(data.name || defaults.name);
+          setPhone(data.phone || defaults.phone);
+          setEmail(data.email || defaults.email);
+          setAddress(data.address || defaults.address);
+          setBankName(data.bankName || defaults.bankName);
+          setAccountName(data.accountName || defaults.accountName);
+          setAccountNumber(data.accountNumber || defaults.accountNumber);
+          setIfscCode(data.ifscCode || defaults.ifscCode);
         } else {
-          loadDefaults();
+          loadDefaultsFor(companyKey);
         }
         setLoading(false);
       })
       .catch(err => {
         console.error('Failed to load seller settings:', err);
-        loadDefaults();
+        loadDefaultsFor(companyKey);
         setLoading(false);
       });
-  }, []);
+  };
 
-  const loadDefaults = () => {
-    setName(DEFAULT_SELLER.name);
-    setPhone(DEFAULT_SELLER.phone);
-    setEmail(DEFAULT_SELLER.email);
-    setAddress(DEFAULT_SELLER.address);
-    setBankName(DEFAULT_SELLER.bankName);
-    setAccountName(DEFAULT_SELLER.accountName);
-    setAccountNumber(DEFAULT_SELLER.accountNumber);
-    setIfscCode(DEFAULT_SELLER.ifscCode);
+  useEffect(() => {
+    fetchSellerData(activeCompany);
+  }, [activeCompany]);
+
+  const loadDefaultsFor = (companyKey) => {
+    const defaults = COMPANY_DEFAULTS[companyKey] || COMPANY_DEFAULTS.a1;
+    setName(defaults.name);
+    setPhone(defaults.phone);
+    setEmail(defaults.email);
+    setAddress(defaults.address);
+    setBankName(defaults.bankName);
+    setAccountName(defaults.accountName);
+    setAccountNumber(defaults.accountNumber);
+    setIfscCode(defaults.ifscCode);
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
     const data = {
+      companyId: activeCompany,
       name,
       phone,
       email,
@@ -103,13 +104,41 @@ export default function Settings({ onSaveSettings }) {
     return <FormShimmer />;
   }
 
+  const isA1 = activeCompany === 'a1';
+
   return (
     <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden">
       {/* Header */}
-      <div className="bg-white border-b border-zinc-200 px-6 py-5 flex justify-between items-center">
+      <div className="bg-white border-b border-zinc-200 px-6 py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-base font-extrabold text-zinc-800 tracking-tight">Business Configuration</h2>
-          <p className="text-xs text-zinc-400 mt-1">Configure company details, branding and default payment mode info</p>
+          <p className="text-xs text-zinc-400 mt-1">Configure company profiles, bank account modes, and official details</p>
+        </div>
+
+        {/* Company Tabs */}
+        <div className="flex bg-zinc-100 p-1 rounded-xl border border-zinc-200/60 self-stretch sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setActiveCompany('a1')}
+            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              isA1
+                ? 'bg-white text-[#0b2240] shadow-xs'
+                : 'text-zinc-500 hover:text-zinc-800'
+            }`}
+          >
+            A-1 Enterprises
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveCompany('shiv_mahima')}
+            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              !isA1
+                ? 'bg-white text-[#0b2240] shadow-xs'
+                : 'text-zinc-500 hover:text-zinc-800'
+            }`}
+          >
+            Shiv Mahima
+          </button>
         </div>
       </div>
 
@@ -268,9 +297,13 @@ export default function Settings({ onSaveSettings }) {
               {/* Graphic/Visual preview of logos */}
               <div className="pt-2">
                 <div className="border border-zinc-200 p-2.5 rounded-xl bg-zinc-50 text-center max-w-xs mx-auto">
-                  <span className="text-[10px] text-zinc-400 block mb-1">Company Logo Sourced</span>
-                  <div className="relative h-12 w-full mx-auto">
-                    <Image src="/logo.png" alt="A-1 logo" fill style={{ objectFit: 'contain' }} />
+                  <span className="text-[10px] text-zinc-400 block mb-1">Company Logo ({isA1 ? 'A-1 Enterprises' : 'Shiv Mahima'})</span>
+                  <div className="relative h-14 w-full mx-auto">
+                    <img 
+                      src={isA1 ? '/logo.png' : '/logo-shiv-mahima.png'} 
+                      alt={isA1 ? 'A-1 Logo' : 'Shiv Mahima Logo'} 
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                 </div>
               </div>
@@ -282,10 +315,10 @@ export default function Settings({ onSaveSettings }) {
         <div className="pt-4 border-t border-zinc-200 flex flex-col sm:flex-row justify-between items-center gap-3">
           <button
             type="button"
-            onClick={loadDefaults}
+            onClick={() => loadDefaultsFor(activeCompany)}
             className="text-xs text-zinc-400 hover:text-zinc-600 font-semibold cursor-pointer"
           >
-            Reset to default branding details
+            Reset to default {isA1 ? 'A-1' : 'Shiv Mahima'} details
           </button>
           
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">

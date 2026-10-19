@@ -11,6 +11,7 @@ const ItemSchema = new mongoose.Schema({
 const DocumentSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   type: { type: String, enum: ['bill', 'quotation'], required: true },
+  companyId: { type: String, enum: ['a1', 'shiv_mahima'], default: 'a1' },
   number: { type: String, required: true },
   date: { type: String, required: true },
   customerName: { type: String, required: true },

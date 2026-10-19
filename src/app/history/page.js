@@ -17,15 +17,17 @@ export default function HistoryPage() {
   const [totalDocs, setTotalDocs] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [companyFilter, setCompanyFilter] = useState('all');
 
-  const fetchDocs = (currentPage, currentSearch, currentType) => {
+  const fetchDocs = (currentPage, currentSearch, currentType, currentCompany) => {
     setIsSearching(true);
     const params = new URLSearchParams({
       paginate: 'true',
       page: String(currentPage),
       limit: '10',
       search: currentSearch,
-      type: currentType
+      type: currentType,
+      company: currentCompany || 'all'
     });
 
     fetch(`/api/documents?${params.toString()}`)
@@ -50,11 +52,11 @@ export default function HistoryPage() {
   // Debounced effect for API search queries
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchDocs(page, searchTerm, typeFilter);
+      fetchDocs(page, searchTerm, typeFilter, companyFilter);
     }, 250);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [page, searchTerm, typeFilter]);
+  }, [page, searchTerm, typeFilter, companyFilter]);
 
   const handleTogglePaidStatus = async (id) => {
     const docToUpdate = documents.find(d => d.id === id);
@@ -100,8 +102,8 @@ export default function HistoryPage() {
   return (
     <DocumentHistory
       documents={documents}
-      onView={(doc) => router.push(`/document/${doc.id}`)}
-      onEdit={(doc) => router.push(`/create?edit=${doc.id}`)}
+      onView={(doc) => router.push(`/document/${doc.id || doc._id}`)}
+      onEdit={(doc) => router.push(`/create?edit=${doc.id || doc._id}`)}
       onDelete={handleDeleteDoc}
       onTogglePaid={handleTogglePaidStatus}
       // Pagination props
@@ -119,6 +121,11 @@ export default function HistoryPage() {
       onTypeFilterChange={(type) => {
         setTypeFilter(type);
         setPage(1); // Reset page to 1
+      }}
+      companyFilter={companyFilter}
+      onCompanyFilterChange={(comp) => {
+        setCompanyFilter(comp);
+        setPage(1);
       }}
       isSearching={isSearching}
     />

@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Document from '@/models/Document';
+
+function getDocQuery(id) {
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    return { $or: [{ id: id }, { _id: id }] };
+  }
+  return { id: id };
+}
 
 export async function GET(req, { params }) {
   try {
     await dbConnect();
     const { id } = await params; // Await params in Next.js 15+
     
-    const doc = await Document.findOne({ id: id });
+    const doc = await Document.findOne(getDocQuery(id));
     
     if (!doc) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
@@ -26,7 +34,7 @@ export async function PUT(req, { params }) {
     const data = await req.json();
     
     const doc = await Document.findOneAndUpdate(
-      { id: id },
+      getDocQuery(id),
       data,
       { new: true }
     );
@@ -46,7 +54,7 @@ export async function DELETE(req, { params }) {
     await dbConnect();
     const { id } = await params; // Await route params in Next.js 15+
     
-    const result = await Document.findOneAndDelete({ id: id });
+    const result = await Document.findOneAndDelete(getDocQuery(id));
     
     if (!result) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
@@ -54,6 +62,7 @@ export async function DELETE(req, { params }) {
     
     return NextResponse.json({ message: 'Document deleted successfully' });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 550 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

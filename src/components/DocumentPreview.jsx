@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { ArrowLeft, Printer, Download, CreditCard, ShieldCheck, Pencil, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import html2canvas from 'html2canvas-pro';
@@ -118,27 +119,64 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
     setIsEditing(true);
     if (onEdit) onEdit();
   };
-  const [bankInfo, setBankInfo] = React.useState({
-    bankName: 'ICICI BANK',
-    accountName: 'Rakesh Sharma',
-    accountNumber: '329701501647',
-    ifscCode: 'ICICI0003297'
-  });
+
+  const COMPANY_PROFILES = {
+    a1: {
+      id: 'a1',
+      name: 'A-1 Enterprises Fabrication Works',
+      specialty: 'Fabrication Works Specialist',
+      services: 'Gates, Grills, SS Railings, Rolling Shutters, Structural Works',
+      address: 'Shani Mandir Road, Shivar Basti, Marunji, Pune - 411057',
+      phone: '+91-7759971969',
+      email: 'enterprises.a1@gmail.com',
+      logo: '/logo.png',
+      signoff: 'For A-1 Enterprises',
+      bank: {
+        bankName: 'ICICI BANK',
+        accountName: 'Rakesh Sharma',
+        accountNumber: '329701501647',
+        ifscCode: 'ICICI0003297'
+      }
+    },
+    shiv_mahima: {
+      id: 'shiv_mahima',
+      name: 'Shiv Mahima Tensile & Car Parking Sheds',
+      specialty: 'Tensile & Car Parking Sheds Specialist',
+      services: 'Tensile Structures, Car Parking Sheds, Gazebos, Swimming Pool Sheds',
+      address: 'Shani Mandir Road, Shivar Basti, Marunji, Pune - 411057',
+      phone: '+91-7759971969',
+      email: 'enterprises.a1@gmail.com',
+      logo: '/logo-shiv-mahima.png',
+      signoff: 'For Shiv Mahima Tensile & Car Parking Sheds',
+      bank: {
+        bankName: 'Central Bank of India',
+        accountName: 'Shiv Mahima Tensile and Car Parking Shed',
+        accountNumber: '4159152307',
+        ifscCode: 'CBIN0283782'
+      }
+    }
+  };
+
+  const companyKey = doc.companyId === 'shiv_mahima' ? 'shiv_mahima' : 'a1';
+  const company = COMPANY_PROFILES[companyKey];
+
+  const [bankInfo, setBankInfo] = React.useState(company.bank);
 
   React.useEffect(() => {
-    const saved = localStorage.getItem('a1_seller_details');
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        setBankInfo({
-          bankName: data.bankName || 'ICICI BANK',
-          accountName: data.accountName || 'Rakesh Sharma',
-          accountNumber: data.accountNumber || '329701501647',
-          ifscCode: data.ifscCode || 'ICICI0003297'
-        });
-      } catch (e) {}
-    }
-  }, []);
+    fetch(`/api/seller?company=${companyKey}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) {
+          setBankInfo({
+            bankName: data.bankName || company.bank.bankName,
+            accountName: data.accountName || company.bank.accountName,
+            accountNumber: data.accountNumber || company.bank.accountNumber,
+            ifscCode: data.ifscCode || company.bank.ifscCode
+          });
+        }
+      })
+      .catch(() => {});
+  }, [companyKey]);
 
   const handlePrint = async () => {
     try {
@@ -243,27 +281,22 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
         className="print:hidden bg-white p-4 rounded-xl border border-zinc-200 shadow-xs flex items-center justify-between mx-auto"
         style={{ width: previewZoom < 1 ? 800 * previewZoom : '100%' }}
       >
-        <button
-          type="button"
-          onClick={onBack}
+        <Link
+          href="/history"
           className="flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-zinc-800 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to list
-        </button>
+        </Link>
 
         <div className="flex gap-3">
-          {onEdit && (
-            <button
-              type="button"
-              onClick={handleEdit}
-              disabled={isEditing}
-              className={`flex items-center gap-1.5 px-4.5 py-2 bg-white border border-zinc-200 text-zinc-600 hover:text-[#b2801e] hover:border-[#b2801e] hover:bg-[#b2801e]/5 rounded-lg text-xs font-bold shadow-xs transition-all ${isEditing ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
-            >
-              {isEditing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pencil className="w-4 h-4" />}
-              <span className="hidden sm:inline">{isEditing ? 'Loading...' : 'Edit'}</span>
-            </button>
-          )}
+          <Link
+            href={`/create?edit=${doc.id || doc._id}`}
+            className="flex items-center gap-1.5 px-4.5 py-2 bg-white border border-zinc-200 text-zinc-600 hover:text-[#b2801e] hover:border-[#b2801e] hover:bg-[#b2801e]/5 rounded-lg text-xs font-bold shadow-xs transition-all cursor-pointer"
+          >
+            <Pencil className="w-4 h-4" />
+            <span className="hidden sm:inline">Edit</span>
+          </Link>
           <button
             type="button"
             onClick={handlePrint}
@@ -311,15 +344,15 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
             <div className="space-y-3">
               <div className="relative w-64 h-24 max-w-full">
                 <img
-                  src="/logo.png"
-                  alt="A-1 Enterprises Fabrication Works"
+                  src={company.logo}
+                  alt={company.name}
                   className="w-full h-full object-contain"
                 />
               </div>
               <div className="text-[11px] text-zinc-700 font-semibold space-y-0.5 mt-2">
-                <p className="font-extrabold text-[#b2801e] text-[12px] uppercase">Fabrication Works Specialist</p>
-                <p>Gates, Grills, SS Railings, Rolling Shutters, Structural Works</p>
-                <p>Address: Shani Mandir Road, Shivar Basti, Marunji, Pune - 411057</p>
+                <p className="font-extrabold text-[#b2801e] text-[12px] uppercase">{company.specialty}</p>
+                <p>{company.services}</p>
+                <p>Address: {company.address}</p>
               </div>
             </div>
 
@@ -439,10 +472,19 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
               </div>
 
               {/* Note / Terms */}
-              {doc.notes && (
+              {(doc.notes || doc.companyId === 'shiv_mahima') && (
                 <div className="text-[11px] text-zinc-700 leading-relaxed font-semibold">
                   <span className="font-bold text-zinc-500 uppercase block mb-1">Notes / Terms:</span>
-                  <p className="whitespace-pre-line">{doc.notes}</p>
+                  {doc.notes && <p className="whitespace-pre-line">{doc.notes}</p>}
+                  {doc.companyId === 'shiv_mahima' && !doc.notes?.toLowerCase().includes('warranty') && (
+                    <p className="whitespace-pre-line mt-1">Warranty: 10 Years Warranty on Tensile Structure & Fabric.</p>
+                  )}
+                  {doc.companyId === 'shiv_mahima' && (
+                    <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 border border-amber-200/80 text-[#b2801e] text-[10px] font-extrabold uppercase tracking-wide">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#b2801e]" />
+                      <span>10 Years Warranty Included</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -528,7 +570,7 @@ export default function DocumentPreview({ doc, onBack, onEdit }) {
               </div>
               
               <div className="space-y-1 pt-6 text-xs">
-                <p className="text-zinc-500 font-bold">For A-1 Enterprises</p>
+                <p className="text-zinc-500 font-bold">{company.signoff}</p>
                 <div className="h-12 flex items-center justify-end">
                   <span className="font-signature text-xl text-[#0b2240] tracking-wider select-none pr-2">
                     Rakesh Sharma

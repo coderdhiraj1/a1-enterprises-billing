@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Search, Eye, Pencil, Trash2, CheckCircle2, XCircle, FileText, Receipt, Loader2 } from 'lucide-react';
+import React from 'react';
+import Link from 'next/link';
+import { Search, Eye, Pencil, Trash2, CheckCircle2, XCircle, FileText, Receipt } from 'lucide-react';
 
 export default function DocumentHistory({ 
   documents = [], 
@@ -18,23 +19,15 @@ export default function DocumentHistory({
   onSearchChange,
   typeFilter = 'all',
   onTypeFilterChange,
+  companyFilter = 'all',
+  onCompanyFilterChange,
   isSearching = false
 }) {
-  const [navigatingId, setNavigatingId] = useState(null);
-
-  const handleAction = (doc, actionType) => {
-    setNavigatingId(doc.id);
-    if (actionType === 'view') {
-      onView(doc);
-    } else if (actionType === 'edit') {
-      onEdit(doc);
-    }
-  };
 
   return (
     <div className="space-y-6">
       {/* Search & Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-xs flex flex-col md:flex-row gap-4">
+      <div className="bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-xs flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
@@ -46,28 +39,58 @@ export default function DocumentHistory({
           />
         </div>
         
-        <div className="flex bg-zinc-100/80 p-1.5 rounded-xl">
-          {[
-            { value: 'all', label: 'All Docs' },
-            { value: 'bill', label: 'Invoices' },
-            { value: 'quotation', label: 'Quotations' }
-          ].map(opt => {
-            const isActive = typeFilter === opt.value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => onTypeFilterChange(opt.value)}
-                className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-white shadow-sm text-[#0b2240]'
-                    : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50'
-                }`}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center">
+          {/* Company Filter Tabs */}
+          {onCompanyFilterChange && (
+            <div className="flex bg-zinc-100/80 p-1.5 rounded-xl flex-1 sm:flex-none">
+              {[
+                { value: 'all', label: 'All Companies' },
+                { value: 'a1', label: 'A-1' },
+                { value: 'shiv_mahima', label: 'Shiv Mahima' }
+              ].map(opt => {
+                const isActive = companyFilter === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => onCompanyFilterChange(opt.value)}
+                    className={`flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-white shadow-xs text-[#0b2240]'
+                        : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Doc Type Filter Tabs */}
+          <div className="flex bg-zinc-100/80 p-1.5 rounded-xl flex-1 sm:flex-none">
+            {[
+              { value: 'all', label: 'All Docs' },
+              { value: 'bill', label: 'Invoices' },
+              { value: 'quotation', label: 'Quotations' }
+            ].map(opt => {
+              const isActive = typeFilter === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => onTypeFilterChange(opt.value)}
+                  className={`flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-white shadow-xs text-[#0b2240]'
+                      : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -104,18 +127,10 @@ export default function DocumentHistory({
               
               return (
                 <div
-                  key={doc.id}
-                  onClick={() => handleAction(doc, 'view')}
-                  className={`p-4 md:px-6 md:py-4 flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 items-stretch md:items-center hover:bg-zinc-50/80 transition-all bg-white rounded-2xl md:rounded-none border border-zinc-200/80 md:border-0 shadow-sm md:shadow-none cursor-pointer relative ${navigatingId === doc.id ? 'opacity-60 scale-[0.99] pointer-events-none' : ''}`}
+                  key={doc.id || doc._id}
+                  onClick={() => onView && onView(doc)}
+                  className="p-4 md:px-6 md:py-4 flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 items-stretch md:items-center hover:bg-zinc-50/80 transition-all bg-white rounded-2xl md:rounded-none border border-zinc-200/80 md:border-0 shadow-sm md:shadow-none cursor-pointer"
                 >
-                  {/* Loading Overlay */}
-                  {navigatingId === doc.id && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white/40 z-10 rounded-2xl md:rounded-none">
-                      <div className="bg-white p-2 rounded-full shadow-md">
-                        <Loader2 className="w-5 h-5 animate-spin text-[#0b2240]" />
-                      </div>
-                    </div>
-                  )}
                   {/* Number & Date */}
                   <div className="col-span-2 flex justify-between items-center md:flex-col md:items-start md:justify-center">
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider order-2 md:order-1">
@@ -125,9 +140,18 @@ export default function DocumentHistory({
                         year: 'numeric'
                       })}
                     </span>
-                    <span className="text-sm font-black text-[#0b2240] order-1 md:order-2">
-                      {doc.number}
-                    </span>
+                    <div className="flex items-center gap-1.5 order-1 md:order-2 flex-wrap">
+                      <span className="text-sm font-black text-[#0b2240]">
+                        {doc.number}
+                      </span>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                        doc.companyId === 'shiv_mahima'
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200/60'
+                          : 'bg-amber-50 text-[#b2801e] border border-amber-200/60'
+                      }`}>
+                        {doc.companyId === 'shiv_mahima' ? 'SM' : 'A-1'}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Customer Details */}
@@ -158,7 +182,7 @@ export default function DocumentHistory({
                       {isBill && (
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); onTogglePaid(doc.id); }}
+                          onClick={(e) => { e.stopPropagation(); onTogglePaid(doc.id || doc._id); }}
                           className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] md:text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
                             doc.paymentStatus === 'paid'
                               ? 'bg-[#2d5e3b]/10 text-[#2d5e3b] border-[#2d5e3b]/20 hover:bg-[#2d5e3b]/20'
@@ -183,26 +207,26 @@ export default function DocumentHistory({
 
                   {/* Row Actions */}
                   <div className="col-span-2 flex justify-end gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-zinc-100">
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleAction(doc, 'view'); }}
-                      className="flex-1 md:flex-none flex justify-center items-center py-1.5 md:p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#0b2240] hover:text-white hover:border-[#0b2240] transition-colors"
+                    <Link
+                      href={`/document/${doc.id || doc._id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex-1 md:flex-none flex justify-center items-center py-1.5 md:p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#0b2240] hover:text-white hover:border-[#0b2240] transition-colors cursor-pointer"
                       title="View & Print"
                     >
                       <Eye className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleAction(doc, 'edit'); }}
-                      className="flex-1 md:flex-none flex justify-center items-center py-1.5 md:p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#b2801e] hover:text-white hover:border-[#b2801e] transition-colors"
+                    </Link>
+                    <Link
+                      href={`/create?edit=${doc.id || doc._id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex-1 md:flex-none flex justify-center items-center py-1.5 md:p-2 rounded-lg bg-white border border-zinc-200 shadow-sm text-zinc-600 hover:bg-[#b2801e] hover:text-white hover:border-[#b2801e] transition-colors cursor-pointer"
                       title="Edit Document"
                     >
                       <Pencil className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                    </button>
+                    </Link>
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); onDelete(doc.id); }}
-                      className="flex-1 md:flex-none flex justify-center items-center py-1.5 md:p-2 rounded-lg bg-rose-50 border border-rose-100 shadow-sm text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-colors"
+                      onClick={(e) => { e.stopPropagation(); onDelete(doc.id || doc._id); }}
+                      className="flex-1 md:flex-none flex justify-center items-center py-1.5 md:p-2 rounded-lg bg-rose-50 border border-rose-100 shadow-sm text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-colors cursor-pointer"
                       title="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />

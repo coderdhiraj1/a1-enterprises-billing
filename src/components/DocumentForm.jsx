@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Calendar, User, Phone, MapPin, Receipt, FileText, ChevronDown } from 'lucide-react';
+import { getDefaultNotes } from '@/lib/companies';
 
 const COMMON_FABRICATION_ITEMS = [
   'MS Safety Gate',
@@ -19,9 +20,26 @@ const COMMON_FABRICATION_ITEMS = [
   'Transport Charges'
 ];
 
+const COMMON_TENSILE_ITEMS = [
+  'Tensile Car Parking Shed',
+  'Cantilever Tensile Car Shed',
+  'Tensile Gazebo Structure',
+  'Swimming Pool Tensile Shed',
+  'Polycarbonate Tensile Roofing',
+  'Tensile Walkway Canopy',
+  'Conical Tensile Structure',
+  'Hyperbolic Paraboloid Tensile Shed',
+  'PVDF / PVC Tensile Membrane Fabric',
+  'MS Tubular Framework for Tensile Shed',
+  'SS Cable & Tensioning Hardware Kit',
+  'Foundation & Installation Charges',
+  'Transport Charges'
+];
+
 const UNITS = ['Nos', 'Sq.Ft', 'Rft', 'Kg', 'Lumpsum', 'Set'];
 
 export default function DocumentForm({ onSave, initialData = null, nextNumber = 1, defaultType = 'bill' }) {
+  const [companyId, setCompanyId] = useState(initialData?.companyId || 'a1');
   const [docType, setDocType] = useState(defaultType);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -40,6 +58,13 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
   const [notes, setNotes] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(null); // stores active item index
 
+  const getDocPrefix = (company, type) => {
+    if (company === 'shiv_mahima') {
+      return type === 'bill' ? 'SM' : 'SMQ';
+    }
+    return type === 'bill' ? 'AE' : 'AQ';
+  };
+
   const get30DaysLater = (baseDateStr) => {
     if (!baseDateStr) return '';
     const d = new Date(baseDateStr);
@@ -53,7 +78,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
     const d2 = new Date(validDate);
     const diffTime = d2 - d1;
     const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-    setNotes(`Validity: This quotation is valid for ${diffDays} days. Payment terms: 50% advance, balance on delivery.`);
+    setNotes(getDefaultNotes(companyId, 'quotation', diffDays));
   };
 
   // Set default state based on edit/new
@@ -62,6 +87,8 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
     setDate(today);
 
     if (initialData) {
+      const initialComp = initialData.companyId || 'a1';
+      setCompanyId(initialComp);
       setDocType(initialData.type);
       setCustomerName(initialData.customerName);
       setCustomerPhone(initialData.customerPhone || '');
@@ -73,46 +100,76 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
       setGstType(initialData.gstType || 'none');
       setGstRate(initialData.gstRate || 18);
       setDiscount(initialData.discount || 0);
-      setNotes(initialData.notes || '');
+
+      let initialNotes = initialData.notes || '';
+      if (initialComp === 'shiv_mahima' && !initialNotes.toLowerCase().includes('warranty')) {
+        initialNotes = initialNotes 
+          ? initialNotes.trim() + '\nWarranty: 10 Years Warranty on Tensile Structure & Fabric.'
+          : getDefaultNotes('shiv_mahima', initialData.type);
+      }
+      setNotes(initialNotes);
     } else {
       const year = new Date().getFullYear();
-      const prefix = docType === 'bill' ? 'AE' : 'AQ';
+      const prefix = getDocPrefix(companyId, docType);
       const formattedNum = String(nextNumber).padStart(4, '0');
       setDocNumber(`${prefix}-${year}-${formattedNum}`);
       setValidUntil(get30DaysLater(today));
       
-      // Default notes
-      setNotes(
-        docType === 'bill'
-          ? 'Thank you for your business with us!'
-          : 'Validity: This quotation is valid for 30 days. Payment terms: 50% advance, balance on delivery.'
-      );
+      // Default notes with 10 years warranty for Shiv Mahima
+      setNotes(getDefaultNotes(companyId, docType));
     }
   }, [initialData, nextNumber]);
+
+  // Handle company toggle details
+  const handleCompanyChange = (newCompany) => {
+    const oldCompany = companyId;
+    setCompanyId(newCompany);
+    
+    // Switch prefix of document number to match company
+    const currentPrefix = getDocPrefix(oldCompany, docType);
+    const targetPrefix = getDocPrefix(newCompany, docType);
+    
+    if (docNumber && docNumber.startsWith(`${currentPrefix}-`)) {
+      setDocNumber(docNumber.replace(new RegExp(`^${currentPrefix}-`), `${targetPrefix}-`));
+    } else if (!initialData) {
+      const year = new Date().getFullYear();
+      const formattedNum = String(nextNumber).padStart(4, '0');
+      setDocNumber(`${targetPrefix}-${year}-${formattedNum}`);
+    }
+
+    // Automatically update notes when toggling companies
+    const oldDefault = getDefaultNotes(oldCompany, docType);
+    if (!notes || notes === oldDefault) {
+      setNotes(getDefaultNotes(newCompany, docType));
+    } else if (newCompany === 'shiv_mahima' && !notes.toLowerCase().includes('warranty')) {
+      setNotes(notes.trim() + '\nWarranty: 10 Years Warranty on Tensile Structure & Fabric.');
+    } else if (newCompany === 'a1' && notes.includes('\nWarranty: 10 Years Warranty on Tensile Structure & Fabric.')) {
+      setNotes(notes.replace('\nWarranty: 10 Years Warranty on Tensile Structure & Fabric.', '').trim());
+    }
+  };
 
   // Handle docType toggle details
   const handleDocTypeChange = (type) => {
     setDocType(type);
     
-    // Switch prefix of document number if it exists and uses standard structure
-    if (docNumber && (docNumber.startsWith('AE-') || docNumber.startsWith('AQ-'))) {
-      const newNum = type === 'bill' 
-        ? docNumber.replace(/^AQ-/, 'AE-') 
-        : docNumber.replace(/^AE-/, 'AQ-');
-      setDocNumber(newNum);
+    // Switch prefix of document number based on active company
+    const currentPrefix = getDocPrefix(companyId, docType);
+    const targetPrefix = getDocPrefix(companyId, type);
+    
+    if (docNumber && docNumber.startsWith(`${currentPrefix}-`)) {
+      setDocNumber(docNumber.replace(new RegExp(`^${currentPrefix}-`), `${targetPrefix}-`));
     } else {
       const year = new Date().getFullYear();
-      const prefix = type === 'bill' ? 'AE' : 'AQ';
       const formattedNum = String(nextNumber).padStart(4, '0');
-      setDocNumber(`${prefix}-${year}-${formattedNum}`);
+      setDocNumber(`${targetPrefix}-${year}-${formattedNum}`);
     }
     
     if (type === 'quotation') {
       const defaultValidDate = get30DaysLater(date);
       setValidUntil(defaultValidDate);
-      setNotes('Validity: This quotation is valid for 30 days. Payment terms: 50% advance, balance on delivery.');
+      setNotes(getDefaultNotes(companyId, 'quotation'));
     } else {
-      setNotes('Thank you for your business with us!');
+      setNotes(getDefaultNotes(companyId, 'bill'));
     }
   };
 
@@ -209,6 +266,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
     const docData = {
       id: initialData?.id || `${docType}_${Date.now()}`,
       type: docType,
+      companyId,
       number: docNumber,
       date,
       validUntil: docType === 'quotation' ? validUntil : null,
@@ -275,6 +333,50 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
       </div>
 
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        {/* Company Selector Banner */}
+        <div className="bg-zinc-50/80 p-4 rounded-xl border border-zinc-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-0.5">
+              Select Company
+            </span>
+            <div className="text-sm font-extrabold text-[#0b2240]">
+              {companyId === 'shiv_mahima' ? 'Shiv Mahima Tensile & Car Parking Sheds' : 'A-1 Enterprises Fabrication Works'}
+            </div>
+            <p className="text-[11px] text-zinc-500 font-medium">
+              {companyId === 'shiv_mahima' 
+                ? 'Central Bank of India • Tensile & Car Parking Sheds Specialist' 
+                : 'ICICI Bank • Fabrication Works Specialist'}
+            </p>
+          </div>
+          
+          <div className="flex bg-zinc-200/70 p-1 rounded-xl w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => handleCompanyChange('a1')}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                companyId === 'a1'
+                  ? 'bg-white text-[#0b2240] shadow-xs'
+                  : 'text-zinc-600 hover:text-zinc-900'
+              }`}
+            >
+              <img src="/logo.png" alt="A-1" className="h-4 w-4 object-contain rounded" />
+              A-1 Enterprises
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCompanyChange('shiv_mahima')}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                companyId === 'shiv_mahima'
+                  ? 'bg-white text-[#0b2240] shadow-xs'
+                  : 'text-zinc-600 hover:text-zinc-900'
+              }`}
+            >
+              <img src="/logo-shiv-mahima.png" alt="Shiv Mahima" className="h-4 w-4 object-contain rounded" />
+              Shiv Mahima
+            </button>
+          </div>
+        </div>
+
         {/* Document Info Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div>
@@ -403,7 +505,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
           <div className="flex justify-between items-center">
             <h3 className="text-xs font-bold text-[#0b2240] uppercase tracking-wider flex items-center gap-1.5">
               <Receipt className="w-3.5 h-3.5 text-[#dda137]" />
-              Material & Fabrication Items
+              {companyId === 'shiv_mahima' ? 'Tensile Structure & Shed Items' : 'Material & Fabrication Items'}
             </h3>
             <button
               type="button"
@@ -445,7 +547,7 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
                   />
                   {showSuggestions === index && (
                     <div className="absolute z-20 w-full mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl max-h-52 overflow-y-auto">
-                      {COMMON_FABRICATION_ITEMS.filter(sug => 
+                      {(companyId === 'shiv_mahima' ? COMMON_TENSILE_ITEMS : COMMON_FABRICATION_ITEMS).filter(sug => 
                         sug.toLowerCase().includes((item.description || '').toLowerCase())
                       ).map((sug, sIdx) => (
                         <button
@@ -601,9 +703,16 @@ export default function DocumentForm({ onSave, initialData = null, nextNumber = 
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
-                Terms / Notes
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Terms / Notes
+                </label>
+                {companyId === 'shiv_mahima' && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-[#b2801e] border border-amber-200/80">
+                    🛡️ 10 Year Warranty
+                  </span>
+                )}
+              </div>
               <textarea
                 placeholder="Include custom terms or details..."
                 value={notes}

@@ -13,6 +13,34 @@ import {
   Briefcase 
 } from 'lucide-react';
 
+// Helper to render KPI amounts cleanly with smaller fractional decimals to prevent overflow
+function formatKPIAmount(amount) {
+  const parts = Number(amount || 0).toLocaleString('en-IN', {
+    maximumFractionDigits: 2,
+  }).split('.');
+
+  const fullFormatted = Number(amount || 0).toLocaleString('en-IN', {
+    minimumFractionDigits: parts[1] ? 2 : 0,
+    maximumFractionDigits: 2,
+  });
+
+  return (
+    <div 
+      className="flex items-baseline tracking-tight truncate" 
+      title={`₹${fullFormatted}`}
+    >
+      <span className="text-xl sm:text-2xl lg:text-[23px] xl:text-[25px] font-black text-zinc-950">
+        ₹{parts[0]}
+      </span>
+      {parts[1] && (
+        <span className="text-xs sm:text-sm font-bold text-zinc-400 ml-0.5">
+          .{parts[1]}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function Dashboard({ documents, onCreateBill, onCreateQuotation, onViewDoc, onViewHistory }) {
   // Calculations
   const bills = documents.filter(d => d.type === 'bill');
@@ -59,75 +87,79 @@ export default function Dashboard({ documents, onCreateBill, onCreateQuotation, 
       {/* Stats Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Sales */}
-        <div className="bg-white p-5 rounded-xl border border-zinc-200/80 shadow-xs flex justify-between items-start min-h-[110px]">
-          <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl font-black text-zinc-950 tracking-tight">
-              ₹{totalInvoiced.toLocaleString('en-IN')}
-            </div>
-            <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+        <div className="bg-white p-5 rounded-xl border border-zinc-200/80 shadow-xs flex flex-col justify-between min-h-[115px] transition-all hover:border-zinc-300">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
               Total Sales
-            </div>
-            <div className="text-[10px] text-zinc-400 font-medium">
+            </span>
+            <span className="p-2 bg-amber-50 text-[#b2801e] rounded-xl shrink-0">
+              <TrendingUp className="w-4 h-4" />
+            </span>
+          </div>
+          <div className="mt-2.5">
+            {formatKPIAmount(totalInvoiced)}
+            <div className="text-[10px] text-zinc-400 font-medium mt-0.5">
               {bills.length} bills generated
             </div>
           </div>
-          <span className="p-2 bg-amber-50 text-[#b2801e] rounded-xl">
-            <TrendingUp className="w-4 h-4" />
-          </span>
         </div>
 
         {/* Collected */}
-        <div className="bg-white p-5 rounded-xl border border-zinc-200/80 shadow-xs flex justify-between items-start min-h-[110px]">
-          <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl font-black text-zinc-955 tracking-tight">
-              ₹{totalCollected.toLocaleString('en-IN')}
-            </div>
-            <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+        <div className="bg-white p-5 rounded-xl border border-zinc-200/80 shadow-xs flex flex-col justify-between min-h-[115px] transition-all hover:border-zinc-300">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
               Collected
-            </div>
-            <div className="text-[10px] text-zinc-400 font-medium">
+            </span>
+            <span className="p-2 bg-emerald-50 text-emerald-600 rounded-xl shrink-0">
+              <CheckCircle2 className="w-4 h-4" />
+            </span>
+          </div>
+          <div className="mt-2.5">
+            {formatKPIAmount(totalCollected)}
+            <div className="text-[10px] text-zinc-400 font-medium mt-0.5">
               Paid cash memos
             </div>
           </div>
-          <span className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
-            <CheckCircle2 className="w-4 h-4" />
-          </span>
         </div>
 
         {/* Pending */}
-        <div className="bg-white p-5 rounded-xl border border-zinc-200/80 shadow-xs flex justify-between items-start min-h-[110px]">
-          <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl font-black text-zinc-955 tracking-tight">
-              ₹{totalPending.toLocaleString('en-IN')}
-            </div>
-            <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+        <div className="bg-white p-5 rounded-xl border border-zinc-200/80 shadow-xs flex flex-col justify-between min-h-[115px] transition-all hover:border-zinc-300">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
               Pending
-            </div>
-            <div className="text-[10px] text-zinc-400 font-medium">
+            </span>
+            <span className="p-2 bg-rose-50 text-rose-600 rounded-xl shrink-0">
+              <Clock className="w-4 h-4" />
+            </span>
+          </div>
+          <div className="mt-2.5">
+            {formatKPIAmount(totalPending)}
+            <div className="text-[10px] text-zinc-400 font-medium mt-0.5">
               Unpaid invoices
             </div>
           </div>
-          <span className="p-2 bg-rose-50 text-rose-600 rounded-xl">
-            <Clock className="w-4 h-4" />
-          </span>
         </div>
 
         {/* Quotations */}
-        <div className="bg-white p-5 rounded-xl border border-zinc-200/80 shadow-xs flex justify-between items-start min-h-[110px]">
-          <div className="space-y-1">
-            <div className="text-2xl sm:text-3xl font-black text-zinc-955 tracking-tight">
-              {quotations.length}
-            </div>
-            <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+        <div className="bg-white p-5 rounded-xl border border-zinc-200/80 shadow-xs flex flex-col justify-between min-h-[115px] transition-all hover:border-zinc-300">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
               Quotations
+            </span>
+            <span className="p-2 bg-indigo-50 text-indigo-600 rounded-xl shrink-0">
+              <Briefcase className="w-4 h-4" />
+            </span>
+          </div>
+          <div className="mt-2.5">
+            <div className="flex items-baseline tracking-tight truncate">
+              <span className="text-xl sm:text-2xl lg:text-[23px] xl:text-[25px] font-black text-zinc-950">
+                {quotations.length}
+              </span>
             </div>
-            <div className="text-[10px] text-zinc-400 font-medium">
+            <div className="text-[10px] text-zinc-400 font-medium mt-0.5">
               Project quotes sent
             </div>
           </div>
-          <span className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-            <Briefcase className="w-4 h-4" />
-          </span>
         </div>
       </div>
 
@@ -169,12 +201,23 @@ export default function Dashboard({ documents, onCreateBill, onCreateQuotation, 
                       {isBill ? <Receipt className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-zinc-400">
-                        {doc.number} • {new Date(doc.date).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric'
-                        })}
+                      <div className="text-xs font-semibold text-zinc-400 flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-zinc-700">{doc.number}</span>
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                          doc.companyId === 'shiv_mahima'
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200/60'
+                            : 'bg-amber-50 text-[#b2801e] border border-amber-200/60'
+                        }`}>
+                          {doc.companyId === 'shiv_mahima' ? 'Shiv Mahima' : 'A-1'}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          {new Date(doc.date).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </span>
                       </div>
                       <div className="text-sm font-bold text-zinc-805 mt-0.5">
                         {doc.customerName}

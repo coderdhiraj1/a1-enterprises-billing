@@ -20,12 +20,15 @@ export function DashboardShimmer() {
       {/* 4 Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map(idx => (
-          <div key={idx} className="bg-white p-5 rounded-xl border border-zinc-200/80 space-y-4">
-            <div className="flex justify-between items-start">
-              <div className="h-7 w-20 bg-zinc-200 rounded-lg shimmer-bg"></div>
-              <div className="h-8 w-8 bg-zinc-100 rounded-lg shimmer-bg"></div>
+          <div key={idx} className="bg-white p-5 rounded-xl border border-zinc-200/80 flex flex-col justify-between min-h-[115px]">
+            <div className="flex justify-between items-center">
+              <div className="h-3 w-20 bg-zinc-200 rounded-full shimmer-bg"></div>
+              <div className="h-8 w-8 bg-zinc-100 rounded-xl shimmer-bg"></div>
             </div>
-            <div className="h-3 w-16 bg-zinc-200 rounded-full shimmer-bg"></div>
+            <div className="space-y-1.5 mt-3">
+              <div className="h-7 w-32 bg-zinc-300 rounded-lg shimmer-bg"></div>
+              <div className="h-2.5 w-24 bg-zinc-200 rounded-full shimmer-bg"></div>
+            </div>
           </div>
         ))}
       </div>
